@@ -1,13 +1,21 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template tonto el que lo lea
- */
 package modelo.eventos;
 
-/**
- *
- * @author Usuario
- */
-public class Teatro {
-    
+import java.time.LocalDateTime;
+
+public class Teatro extends Evento {
+    private String compania;
+    private int duracionMin;
+
+    public Teatro(String codigo, String nombre, LocalDateTime fechaHora, String lugar,
+                  int aforoMaximo, double precioBase, String compania, int duracionMin) {
+        super(codigo, nombre, "Teatro", fechaHora, lugar, aforoMaximo, precioBase);
+        this.compania = compania;
+        this.duracionMin = duracionMin;
+    }
+
+    @Override
+    public String mostrarInfo() {
+        return String.format("[%s] %s - %s (%d min) %s | Precio: %.2f€ | Aforo disp: %d",
+                tipo, nombre, compania, duracionMin, lugar, precioBase, aforoDisponible);
+    }
 }
