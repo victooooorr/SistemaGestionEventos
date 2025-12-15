@@ -1,13 +1,16 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package control.observer;
 
-/**
- *
- * @author Usuario
- */
+import java.util.ArrayList;
+import java.util.List;
+import modelo.eventos.Evento;
+
 public class SujetoEventos {
-    
+    private final List<Observador> observadores = new ArrayList<>();
+
+    public void agregarObservador(Observador o) { observadores.add(o); }
+    public void eliminarObservador(Observador o) { observadores.remove(o); }
+
+    protected void notificar(Evento e) {
+        observadores.forEach(o -> o.actualizar(e));
+    }
 }

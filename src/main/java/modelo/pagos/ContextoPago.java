@@ -1,13 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package modelo.pagos;
 
-/**
- *
- * @author Usuario
- */
 public class ContextoPago {
-    
+    private EstrategiaPago estrategia;
+
+    public void setEstrategia(EstrategiaPago estrategia) { this.estrategia = estrategia; }
+
+    public void ejecutarPago(double monto) {
+        if (estrategia == null) throw new IllegalStateException("No se ha configurado una estrategia de pago.");
+        estrategia.pagar(monto);
+    }
 }

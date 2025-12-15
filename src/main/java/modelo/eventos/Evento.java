@@ -11,9 +11,10 @@ public abstract class Evento {
     protected int aforoMaximo;
     protected int aforoDisponible;
     protected double precioBase;
+    protected String urlInfo;
 
     public Evento(String codigo, String nombre, String tipo, LocalDateTime fechaHora,
-                  String lugar, int aforoMaximo, double precioBase) {
+                  String lugar, int aforoMaximo, double precioBase, String urlInfo) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.tipo = tipo;
@@ -22,6 +23,7 @@ public abstract class Evento {
         this.aforoMaximo = aforoMaximo;
         this.aforoDisponible = aforoMaximo;
         this.precioBase = precioBase;
+        this.urlInfo = urlInfo;
     }
 
     public String getCodigo() { return codigo; }

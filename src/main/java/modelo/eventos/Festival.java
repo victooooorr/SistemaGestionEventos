@@ -1,30 +1,29 @@
 package modelo.eventos;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-public class Festival extends Evento implements ComponenteEvento {
-    private final List<ComponenteEvento> subeventos = new ArrayList<>();
+public class Festival extends Evento {
+    private Map<String, List<String>> horariosPorDia;
 
     public Festival(String codigo, String nombre, LocalDateTime fechaHora, String lugar,
-                    int aforoMaximo, double precioBase) {
-        super(codigo, nombre, "Festival", fechaHora, lugar, aforoMaximo, precioBase);
+                    int aforoMaximo, double precioBase, String urlInfo) {
+        super(codigo, nombre, "Festival", fechaHora, lugar, aforoMaximo, precioBase, urlInfo);
+        this.horariosPorDia = new HashMap<>();
     }
 
-    public void agregarEvento(ComponenteEvento e) { subeventos.add(e); }
-    public void eliminarEvento(ComponenteEvento e) { subeventos.remove(e); }
-    public List<ComponenteEvento> getSubeventos() { return List.copyOf(subeventos); }
+    public void agregarHorario(String dia, String horario) {
+        horariosPorDia.computeIfAbsent(dia, k -> new ArrayList<>()).add(horario);
+    }
 
     @Override
     public String mostrarInfo() {
-        return String.format("[%s] %s (%d actividades) %s | Precio base: %.2f€ | Aforo disp: %d",
-                tipo, nombre, subeventos.size(), lugar, precioBase, aforoDisponible);
-    }
-
-    @Override
-    public void mostrarInfoCompuesto() {
-        System.out.println(mostrarInfo());
-        subeventos.forEach(ComponenteEvento::mostrarInfoCompuesto);
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("[%s] %s %s | Precio: %.2f€ | Info: %s\n", tipo, nombre, lugar, precioBase, urlInfo));
+        horariosPorDia.forEach((dia, horarios) -> {
+            sb.append("  ").append(dia).append(": ").append(String.join(", ", horarios)).append("\n");
+        });
+        return sb.toString();
     }
 }
+

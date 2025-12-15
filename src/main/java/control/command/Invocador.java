@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package control.command;
 
-/**
- *
- * @author Usuario
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class Invocador {
-    
+    private final List<Comando> cola = new ArrayList<>();
+    public void añadir(Comando c) { cola.add(c); }
+    public void ejecutarTodos() { cola.forEach(Comando::ejecutar); cola.clear(); }
 }
