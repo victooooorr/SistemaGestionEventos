@@ -1,53 +1,86 @@
 package app;
 
 import controll.CatalogoEventos;
-import controll.GestorEntradas;
-import control.command.Invocador;
-import control.command.ReservarEntrada;
-import modelo.entradas.EntradaBasica;
-import modelo.eventos.Concierto;
-import modelo.eventos.ConciertoFactory;
-import modelo.pagos.ContextoPago;
-import modelo.pagos.PagoTarjeta;
+import controll.GestorUsuarios;
+import modelo.eventos.*;
+import modelo.usuarios.Administrador;
 import modelo.usuarios.Cliente;
+import vista.VentanaLogin;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Main {
     public static void main(String[] args) {
-        var catalogo = CatalogoEventos.getInstancia();
 
-        // Crear un concierto usando la factory
-        ConciertoFactory factory = new ConciertoFactory();
-        Concierto concierto = (Concierto) factory.crearEvento(
+        // ✅ Usamos el Singleton
+        GestorUsuarios gestorUsuarios = GestorUsuarios.getInstancia();
+        CatalogoEventos catalogo = CatalogoEventos.getInstancia();
+
+        // ✅ Crear administrador de prueba
+        Administrador admin = new Administrador(
+                "99999999X", "Admin", "admin@correo.com", "clave", "600000001"
+        );
+        gestorUsuarios.altaUsuario(admin, "admin123");
+
+        // ✅ Crear clientes de prueba
+        Cliente cliente1 = new Cliente(
+                "12345678A", "Ana López", "ana@correo.com", "clave", "600000000",
+                LocalDate.of(1995, 5, 20)
+        );
+        gestorUsuarios.altaUsuario(cliente1, "1234");
+
+        Cliente cliente2 = new Cliente(
+                "87654321B", "Carlos Pérez", "carlos@correo.com", "clave", "600000002",
+                LocalDate.of(1990, 3, 10)
+        );
+        gestorUsuarios.altaUsuario(cliente2, "abcd");
+
+        // ✅ Crear eventos predeterminados
+        Evento concierto = new Concierto(
                 "EV001", "Rock Night",
-                LocalDateTime.now().plusDays(10), "Madrid Arena",
+                LocalDateTime.now().plusDays(10),
+                "Madrid Arena",
                 100, 25.0,
                 "https://rocknight.com/info",
                 "Rock", "The Flames", 120
         );
-        catalogo.agregarEvento(concierto);
 
-        // Crear cliente con fecha de nacimiento
-        Cliente cliente = new Cliente(
-                "12345678A", "Ana López", "ana@correo.com", "clave", "600000000",
-                LocalDate.of(1995, 5, 20)
+        Evento teatro = new Teatro(
+                "EV002", "Hamlet",
+                LocalDateTime.now().plusDays(5),
+                "Teatro Real",
+                80, 30.0,
+                "https://teatroreal.com/hamlet",
+                "Compañía Nacional", 150
         );
 
-        // Configurar pago
-        ContextoPago pago = new ContextoPago();
-        pago.setEstrategia(new PagoTarjeta());
+        Evento conferencia = new Conferencia(
+                "EV003", "IA en 2025",
+                LocalDateTime.now().plusDays(20),
+                "IFEMA Madrid",
+                200, 15.0,
+                "https://ifema.es/ia2025",
+                "Dra. García", "Inteligencia Artificial", 90
+        );
 
-        // Comprar entradas
-        GestorEntradas gestor = new GestorEntradas();
-        var entrada = new EntradaBasica(concierto);
+        Festival festival = new Festival(
+                "EV004", "Summer Fest",
+                LocalDateTime.now().plusDays(30),
+                "Parque del Sol",
+                300, 40.0,
+                "https://summerfest.com"
+        );
+        festival.agregarHorario("Día 1", "18:00 - 02:00");
+        festival.agregarHorario("Día 2", "17:00 - 03:00");
 
-        var reservar = new ReservarEntrada(gestor, concierto, cliente, 2, entrada, pago);
-        var invocador = new Invocador();
-        invocador.añadir(reservar);
-        invocador.ejecutarTodos();
+        // ✅ Añadir eventos al catálogo
+        catalogo.agregarEvento(concierto);
+        catalogo.agregarEvento(teatro);
+        catalogo.agregarEvento(conferencia);
+        catalogo.agregarEvento(festival);
 
-        System.out.println("Compra realizada. Ticket generado.");
+        // ✅ Lanzar la ventana de login
+        new VentanaLogin(gestorUsuarios).setVisible(true);
     }
 }

@@ -1,26 +1,45 @@
 package modelo.usuarios;
 
 import control.observer.Observador;
-import java.time.LocalDate;
 import modelo.eventos.Evento;
 
-public class Cliente extends Usuario implements Observador {
-    private Preferencias preferencias;
-    private LocalDate fechaNacimiento;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-    public Cliente(String dni, String nombre, String correo, String clave, String telefono, LocalDate fechaNacimiento) {
+public class Cliente extends Usuario implements Observador {
+
+    private LocalDate fechaNacimiento;
+    private Preferencias preferencias;
+
+    public Cliente(String dni, String nombre, String correo, String clave, String telefono,
+                   LocalDate fechaNacimiento) {
         super(dni, nombre, correo, clave, telefono);
         this.fechaNacimiento = fechaNacimiento;
     }
-     public LocalDate getFechaNacimiento() {
-        return fechaNacimiento;
-    }
-    public void setPreferencias(Preferencias preferencias) { this.preferencias = preferencias; }
-    public Preferencias getPreferencias() { return preferencias; }
 
+    public void setPreferencias(Preferencias preferencias) {
+        this.preferencias = preferencias;
+    }
+
+    public Preferencias getPreferencias() {
+        return preferencias;
+    }
+    private List<String> notificaciones = new ArrayList<>();
+
+    public List<String> getNotificaciones() {
+        return notificaciones;
+    }
+
+    @Override
     public void actualizar(Evento e) {
         if (preferencias != null && preferencias.coincide(e)) {
-            System.out.printf("Notificación para %s: nuevo evento %s%n", nombre, e.mostrarInfo());
+            String mensaje = "Nuevo evento recomendado: " + e.getNombre();
+            notificaciones.add(mensaje);
+            System.out.println("🔔 " + mensaje);
         }
-    }
+    
 }
+}
+    
+

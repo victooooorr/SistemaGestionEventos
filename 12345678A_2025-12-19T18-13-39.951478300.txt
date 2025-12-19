@@ -1,0 +1,8 @@
+Ticket de compra
+----------------
+ID: 96bfd4b2-10fe-4611-9610-c9fe6cabbedc
+Cliente: Ana López
+Evento: Rock Night
+Cantidad: 2
+Precio final: 50,00€
+Fecha: 2025-12-19T18:13:39.951478300

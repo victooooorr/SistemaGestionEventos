@@ -2,15 +2,20 @@ package control.observer;
 
 import java.util.ArrayList;
 import java.util.List;
-import modelo.eventos.Evento;
 
 public class SujetoEventos {
-    private final List<Observador> observadores = new ArrayList<>();
+    protected final List<Observador> observadores = new ArrayList<>();
 
-    public void agregarObservador(Observador o) { observadores.add(o); }
-    public void eliminarObservador(Observador o) { observadores.remove(o); }
+    public void agregarObservador(Observador o) {
+        observadores.add(o);
+    }
 
-    protected void notificar(Evento e) {
-        observadores.forEach(o -> o.actualizar(e));
+    public void eliminarObservador(Observador o) {
+        observadores.remove(o);
+    }
+
+    // ✅ Método protegido para acceder a la lista desde subclases
+    protected List<Observador> getObservadores() {
+        return observadores;
     }
 }
