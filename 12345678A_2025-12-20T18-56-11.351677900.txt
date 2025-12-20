@@ -1,0 +1,8 @@
+Ticket de compra
+----------------
+ID: e4ec60be-4af9-4fd8-a326-dc99fcb6790e
+Cliente: Ana López
+Evento: dwedewd
+Cantidad: 10
+Precio final: 450,00€
+Fecha: 2025-12-20T18:56:11.351677900

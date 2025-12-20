@@ -1,0 +1,17 @@
+===== TICKET DIGITAL =====
+Fecha de compra: 2025-12-20T19:12:34.059081800
+
+Cliente:
+Nombre: Ana López
+Correo: ana
+
+Evento:
+Código: EV004
+Nombre: Summer Fest
+Fecha: 2026-01-19T19:12:22.344066800
+Lugar: Parque del Sol
+
+Entradas compradas: 10
+Precio total: 400.0 €
+Método de pago: Tarjeta
+==========================

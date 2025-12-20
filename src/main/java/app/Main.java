@@ -19,19 +19,19 @@ public class Main {
 
         // ✅ Crear administrador de prueba
         Administrador admin = new Administrador(
-                "99999999X", "Admin", "admin@correo.com", "clave", "600000001"
+                "99999999X", "Admin", "admin", "clave", "600000001"
         );
-        gestorUsuarios.altaUsuario(admin, "admin123");
+        gestorUsuarios.altaUsuario(admin, "admin");
 
         // ✅ Crear clientes de prueba
         Cliente cliente1 = new Cliente(
-                "12345678A", "Ana López", "ana@correo.com", "clave", "600000000",
+                "12345678A", "Ana López", "ana", "clave", "600000000",
                 LocalDate.of(1995, 5, 20)
         );
         gestorUsuarios.altaUsuario(cliente1, "1234");
 
         Cliente cliente2 = new Cliente(
-                "87654321B", "Carlos Pérez", "carlos@correo.com", "clave", "600000002",
+                "87654321B", "Carlos Pérez", "carlos", "clave", "600000002",
                 LocalDate.of(1990, 3, 10)
         );
         gestorUsuarios.altaUsuario(cliente2, "abcd");
