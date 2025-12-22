@@ -10,13 +10,11 @@ import java.time.LocalDateTime;
 
 public class TicketDigital {
 
-    public static File generarTicket(Cliente cliente, Evento evento, int cantidad, String metodoPago) {
+    public static File generarTicket(Cliente cliente, Evento evento, int cantidad, String metodoPago, Entrada entrada) {
 
-        // ✅ Crear carpeta si no existe
         File carpeta = new File("tickets");
         if (!carpeta.exists()) carpeta.mkdir();
 
-        // ✅ Nombre del archivo
         File archivo = new File(carpeta, "ticket_" + cliente.getDni() + "_" + evento.getCodigo() + ".txt");
 
         try (FileWriter writer = new FileWriter(archivo)) {
@@ -34,8 +32,10 @@ public class TicketDigital {
             writer.write("Fecha: " + evento.getFechaHora() + "\n");
             writer.write("Lugar: " + evento.getLugar() + "\n\n");
 
-            writer.write("Entradas compradas: " + cantidad + "\n");
-            writer.write("Precio total: " + (evento.getPrecioBase() * cantidad) + " €\n");
+            writer.write("Tipo de entrada: " + entrada.getDescripcion() + "\n");
+            writer.write("Precio unitario: " + entrada.getPrecio() + " €\n");
+            writer.write("Cantidad: " + cantidad + "\n");
+            writer.write("Precio total: " + (entrada.getPrecio() * cantidad) + " €\n");
             writer.write("Método de pago: " + metodoPago + "\n");
 
             writer.write("==========================\n");
@@ -47,5 +47,6 @@ public class TicketDigital {
         return archivo;
     }
 }
+
 
 

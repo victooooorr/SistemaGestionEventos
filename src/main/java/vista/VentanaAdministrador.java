@@ -101,6 +101,10 @@ public class VentanaAdministrador extends JFrame {
         add(form, BorderLayout.NORTH);
         add(panelEspecifico, BorderLayout.CENTER);
         add(crearButton, BorderLayout.SOUTH);
+        JButton verVentas = new JButton("Ver ventas");
+        verVentas.addActionListener(e -> new VentanaVentas(admin).setVisible(true));
+        form.add(verVentas);
+
     }
 
     private void actualizarCamposEspecificos() {

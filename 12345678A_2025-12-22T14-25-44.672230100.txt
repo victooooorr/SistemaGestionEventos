@@ -1,0 +1,8 @@
+Ticket de compra
+----------------
+ID: a4e16e77-7880-488f-a6fd-2a2a2cffd034
+Cliente: Ana López
+Evento: Summer Fest
+Cantidad: 2
+Precio final: 80,00€
+Fecha: 2025-12-22T14:25:44.672230100

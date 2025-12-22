@@ -1,36 +1,34 @@
 package vista;
 
-import controll.CatalogoEventos;
-import controll.GestorEntradas;
+
 import control.command.Invocador;
 import control.command.ReservarEntrada;
+import controll.CatalogoEventos;
+import controll.GestorEntradas;
 import controll.GestorVentas;
 import excepciones.AforoCompletoException;
 import excepciones.EventoNoEncontradoException;
-import modelo.entradas.EntradaBasica;
+import modelo.entradas.*;
 import modelo.eventos.Evento;
 import modelo.pagos.ContextoPago;
+import modelo.pagos.PagoPayPal;
 import modelo.pagos.PagoTarjeta;
+import modelo.pagos.PagoTransferencia;
 import modelo.usuarios.Cliente;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
-import modelo.entradas.TicketDigital;
-import modelo.pagos.PagoPayPal;
-import modelo.pagos.PagoTransferencia;
 
 public class VentanaCliente extends JFrame {
 
     private JTable tablaEventos;
     private DefaultTableModel modeloTabla;
     private JButton comprarButton, refrescarButton;
-    private JTextArea areaNotificaciones;
-    private JButton verNotificacionesButton;
     private JComboBox<String> metodoPagoCombo;
-
-
+    private JComboBox<String> tipoEntradaCombo;
 
     private final Cliente cliente;
     private final CatalogoEventos catalogo;
@@ -40,12 +38,11 @@ public class VentanaCliente extends JFrame {
         this.catalogo = CatalogoEventos.getInstancia();
 
         setTitle("Panel de Cliente - Bienvenido " + cliente.getNombre());
-        setSize(800, 400);
+        setSize(900, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        // ⬅️ ESTO ES LO QUE FALTA 
         setJMenuBar(MenuSuperior.crearMenu(this, cliente));
-
-
         initComponents();
         cargarEventos();
     }
@@ -53,7 +50,6 @@ public class VentanaCliente extends JFrame {
     private void initComponents() {
         setLayout(new BorderLayout());
 
-        // ✅ Tabla de eventos
         modeloTabla = new DefaultTableModel(
                 new String[]{"Código", "Nombre", "Fecha", "Lugar", "Precio", "Aforo disponible"},
                 0
@@ -62,55 +58,44 @@ public class VentanaCliente extends JFrame {
         tablaEventos = new JTable(modeloTabla);
         JScrollPane scroll = new JScrollPane(tablaEventos);
 
-        // ✅ Botones
         comprarButton = new JButton("Comprar entrada");
         comprarButton.addActionListener(e -> comprarEntrada());
 
         refrescarButton = new JButton("Refrescar");
         refrescarButton.addActionListener(e -> cargarEventos());
 
-        JPanel panelBotones = new JPanel();
-        panelBotones.add(comprarButton);
-        panelBotones.add(refrescarButton);
-
-        add(scroll, BorderLayout.CENTER);
-        add(panelBotones, BorderLayout.SOUTH);
-        areaNotificaciones = new JTextArea(5, 20);
-        areaNotificaciones.setEditable(false);
-        JScrollPane scrollNotificaciones = new JScrollPane(areaNotificaciones);
-
-        verNotificacionesButton = new JButton("Ver notificaciones");
-        verNotificacionesButton.addActionListener(e -> cargarNotificaciones());
-
-        JPanel panelNotificaciones = new JPanel(new BorderLayout());
-        panelNotificaciones.setBorder(BorderFactory.createTitledBorder("Notificaciones"));
-        panelNotificaciones.add(scrollNotificaciones, BorderLayout.CENTER);
-        panelNotificaciones.add(verNotificacionesButton, BorderLayout.SOUTH);
-
-        add(panelNotificaciones, BorderLayout.EAST);
         metodoPagoCombo = new JComboBox<>(new String[]{
                 "Tarjeta",
                 "PayPal",
                 "Transferencia"
         });
 
+        tipoEntradaCombo = new JComboBox<>(new String[]{
+                "Básica",
+                "Con Consumición",
+                "VIP"
+        });
+
+        JPanel panelBotones = new JPanel();
+        panelBotones.add(comprarButton);
+        panelBotones.add(refrescarButton);
+
         panelBotones.add(new JLabel("Método de pago:"));
         panelBotones.add(metodoPagoCombo);
-        
+
+        panelBotones.add(new JLabel("Tipo de entrada:"));
+        panelBotones.add(tipoEntradaCombo);
+
         JButton verTickets = new JButton("Mis Tickets");
         verTickets.addActionListener(e -> new VentanaTickets(cliente).setVisible(true));
-
         panelBotones.add(verTickets);
-        
-        
 
-
-
-
+        add(scroll, BorderLayout.CENTER);
+        add(panelBotones, BorderLayout.SOUTH);
     }
 
     private void cargarEventos() {
-        modeloTabla.setRowCount(0); // limpiar tabla
+        modeloTabla.setRowCount(0);
 
         List<Evento> eventos = catalogo.listarEventos().stream().toList();
 
@@ -125,79 +110,73 @@ public class VentanaCliente extends JFrame {
             });
         }
     }
-    private void cargarNotificaciones() {
-        areaNotificaciones.setText("");
-
-        for (String n : cliente.getNotificaciones()) {
-            areaNotificaciones.append("• " + n + "\n");
-        }
-    }
-
 
     private void comprarEntrada() {
-    int fila = tablaEventos.getSelectedRow();
+        int fila = tablaEventos.getSelectedRow();
 
-    if (fila == -1) {
-        JOptionPane.showMessageDialog(this, "Selecciona un evento primero.");
-        return;
-    }
-
-    String codigo = (String) modeloTabla.getValueAt(fila, 0);
-
-    try {
-        Evento evento = catalogo.buscarEvento(codigo);
-
-        String cantidadStr = JOptionPane.showInputDialog(this, "¿Cuántas entradas quieres?");
-        if (cantidadStr == null) return;
-
-        int cantidad = Integer.parseInt(cantidadStr);
-
-        // ✅ Confirmación de compra
-        int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "¿Confirmas la compra de " + cantidad + " entradas para " + evento.getNombre() + "?",
-                "Confirmar compra",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (confirm != JOptionPane.YES_OPTION) return;
-
-        // ✅ Configurar pago con Strategy
-        ContextoPago pago = new ContextoPago();
-
-        String metodo = (String) metodoPagoCombo.getSelectedItem();
-
-        switch (metodo) {
-            case "Tarjeta" -> pago.setEstrategia(new PagoTarjeta());
-            case "PayPal" -> pago.setEstrategia(new PagoPayPal());
-            case "Transferencia" -> pago.setEstrategia(new PagoTransferencia());
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un evento primero.");
+            return;
         }
 
-        // ✅ Crear entrada básica
-        EntradaBasica entrada = new EntradaBasica(evento);
+        String codigo = (String) modeloTabla.getValueAt(fila, 0);
 
-        // ✅ Ejecutar compra usando Command
-        GestorEntradas gestor = new GestorEntradas();
-        ReservarEntrada comando = new ReservarEntrada(gestor, evento, cliente, cantidad, entrada, pago);
+        try {
+            Evento evento = catalogo.buscarEvento(codigo);
 
-        Invocador invocador = new Invocador();
-        invocador.añadir(comando);
-        invocador.ejecutarTodos();
+            String cantidadStr = JOptionPane.showInputDialog(this, "¿Cuántas entradas quieres?");
+            if (cantidadStr == null) return;
 
-        // ✅ Generar ticket digital
-        TicketDigital.generarTicket(cliente, evento, cantidad, metodo);
+            int cantidad = Integer.parseInt(cantidadStr);
 
-        // ✅ Registrar venta
-        GestorVentas.getInstancia().registrarVenta(cliente, evento, cantidad, metodo);
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "¿Confirmas la compra de " + cantidad + " entradas para " + evento.getNombre() + "?",
+                    "Confirmar compra",
+                    JOptionPane.YES_NO_OPTION
+            );
 
-        JOptionPane.showMessageDialog(this, "✅ Compra realizada. Ticket generado.");
+            if (confirm != JOptionPane.YES_OPTION) return;
 
-        cargarEventos(); // refrescar aforo
+            ContextoPago pago = new ContextoPago();
+            String metodo = (String) metodoPagoCombo.getSelectedItem();
 
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Error al comprar: " + ex.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
+            switch (metodo) {
+                case "Tarjeta" -> pago.setEstrategia(new PagoTarjeta());
+                case "PayPal" -> pago.setEstrategia(new PagoPayPal());
+                case "Transferencia" -> pago.setEstrategia(new PagoTransferencia());
+            }
+
+            Entrada entrada = new EntradaBasica(evento);
+
+            String tipo = (String) tipoEntradaCombo.getSelectedItem();
+
+            switch (tipo) {
+                case "Con Consumición" -> entrada = new EntradaConConsumicion(entrada);
+                case "VIP" -> entrada = new EntradaVIP(entrada);
+            }
+
+            GestorEntradas gestor = new GestorEntradas();
+            ReservarEntrada comando = new ReservarEntrada(gestor, evento, cliente, cantidad, entrada, pago);
+
+            Invocador invocador = new Invocador();
+            invocador.añadir(comando);
+            invocador.ejecutarTodos();
+
+            File ticket = TicketDigital.generarTicket(cliente, evento, cantidad, metodo, entrada);
+
+            GestorVentas.getInstancia().registrarVenta(cliente, evento, cantidad, metodo);
+
+            JOptionPane.showMessageDialog(this, "Compra realizada. Ticket generado:\n" + ticket.getAbsolutePath());
+
+            cargarEventos();
+
+        } catch (AforoCompletoException | EventoNoEncontradoException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al comprar: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
-}
-
 }
