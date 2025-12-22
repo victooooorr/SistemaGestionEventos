@@ -178,33 +178,40 @@ public class VentanaAdministrador extends JFrame {
 
             LocalDateTime fechaHora = LocalDateTime.parse(fechaField.getText() + "T" + horaField.getText());
 
-            Evento evento = switch (tipo) {
-                case "Concierto" -> new Concierto(
-                        codigo, nombre, fechaHora, lugar, aforo, precio, url,
-                        generoField.getText(), artistaField.getText(),
-                        Integer.parseInt(duracionField.getText())
-                );
+           Evento evento = null;
 
-                case "Teatro" -> new Teatro(
-                        codigo, nombre, fechaHora, lugar, aforo, precio, url,
-                        companiaField.getText(),
-                        Integer.parseInt(duracionField.getText())
-                );
+            switch (tipo) {
+                case "Concierto":
+                    evento = new Concierto(
+                            codigo, nombre, fechaHora, lugar, aforo, precio, url,
+                            generoField.getText(), artistaField.getText(),
+                            Integer.parseInt(duracionField.getText())
+                    );
+                    break;
 
-                case "Conferencia" -> new Conferencia(
-                        codigo, nombre, fechaHora, lugar, aforo, precio, url,
-                        ponenteField.getText(), tematicaField.getText(),
-                        Integer.parseInt(duracionField.getText())
-                );
+                case "Teatro":
+                    evento = new Teatro(
+                            codigo, nombre, fechaHora, lugar, aforo, precio, url,
+                            companiaField.getText(),
+                            Integer.parseInt(duracionField.getText())
+                    );
+                    break;
 
-                case "Festival" -> {
+                case "Conferencia":
+                    evento = new Conferencia(
+                            codigo, nombre, fechaHora, lugar, aforo, precio, url,
+                            ponenteField.getText(), tematicaField.getText(),
+                            Integer.parseInt(duracionField.getText())
+                    );
+                    break;
+
+                case "Festival":
                     Festival f = new Festival(codigo, nombre, fechaHora, lugar, aforo, precio, url);
-                    f.agregarHorario("Día 1", horariosField.getText());
-                    yield f;
-                }
+                    f.agregarSubevento(new HorarioFestival("Día 1", horariosField.getText()));
+                    evento = f;
+                    break;
+            }
 
-                default -> null;
-            };
 
             catalogo.agregarEvento(evento);
 

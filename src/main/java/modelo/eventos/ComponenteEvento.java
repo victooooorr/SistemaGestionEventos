@@ -1,5 +1,6 @@
 package modelo.eventos;
 
 public interface ComponenteEvento {
-    void mostrarInfoCompuesto();
+    String getNombre();
+    void mostrarInformacion();
 }

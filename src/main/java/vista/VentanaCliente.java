@@ -21,6 +21,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
 import java.util.List;
+import modelo.eventos.Festival;
 
 public class VentanaCliente extends JFrame {
 
@@ -41,7 +42,7 @@ public class VentanaCliente extends JFrame {
         setSize(900, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        // ⬅️ ESTO ES LO QUE FALTA 
+   
         setJMenuBar(MenuSuperior.crearMenu(this, cliente));
         initComponents();
         cargarEventos();
@@ -92,7 +93,36 @@ public class VentanaCliente extends JFrame {
 
         add(scroll, BorderLayout.CENTER);
         add(panelBotones, BorderLayout.SOUTH);
+        
+        JButton verHorarios = new JButton("Ver horarios");
+        verHorarios.addActionListener(e -> verHorariosFestival());
+        panelBotones.add(verHorarios);
+
     }
+    private void verHorariosFestival() {
+        int fila = tablaEventos.getSelectedRow();
+
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un evento primero.");
+            return;
+        }
+
+        String codigo = (String) modeloTabla.getValueAt(fila, 0);
+
+        try {
+            Evento evento = catalogo.buscarEvento(codigo);
+
+            if (evento instanceof Festival festival) {
+                new VentanaSubeventos(festival).setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, "Este evento no es un festival.");
+            }
+
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+    }
+}
+
 
     private void cargarEventos() {
         modeloTabla.setRowCount(0);

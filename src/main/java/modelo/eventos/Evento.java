@@ -2,7 +2,7 @@ package modelo.eventos;
 
 import java.time.LocalDateTime;
 
-public abstract class Evento {
+public abstract class Evento implements ComponenteEvento {
     protected String codigo;
     protected String nombre;
     protected String tipo; // Concierto, Teatro, Conferencia, Festival
@@ -41,5 +41,7 @@ public abstract class Evento {
         aforoDisponible -= cantidad;
     }
 
-    public abstract String mostrarInfo();
+    @Override 
+    public void mostrarInformacion() { 
+        System.out.println(getNombre() + " - " + getFechaHora() + " - " + getLugar()); }
 }

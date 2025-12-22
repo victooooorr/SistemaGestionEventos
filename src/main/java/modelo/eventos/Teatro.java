@@ -14,7 +14,6 @@ public class Teatro extends Evento {
         this.duracionMin = duracionMin;
     }
 
-    @Override
     public String mostrarInfo() {
         return String.format("[%s] %s - %s (%d min) %s | Precio: %.2f€ | Info: %s | Aforo disp: %d",
                 tipo, nombre, compania, duracionMin, lugar, precioBase, urlInfo, aforoDisponible);
