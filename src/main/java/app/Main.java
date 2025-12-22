@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Main {
+
     public static void main(String[] args) {
 
         // ✅ Usamos el Singleton
@@ -64,6 +65,9 @@ public class Main {
                 "Dra. García", "Inteligencia Artificial", 90
         );
 
+        // ============================
+        // FESTIVAL (COMPOSITE)
+        // ============================
         Festival festival = new Festival(
                 "EV004", "Summer Fest",
                 LocalDateTime.now().plusDays(30),
@@ -71,8 +75,10 @@ public class Main {
                 300, 40.0,
                 "https://summerfest.com"
         );
-        festival.agregarHorario("Día 1", "18:00 - 02:00");
-        festival.agregarHorario("Día 2", "17:00 - 03:00");
+
+        // ⬅️ Aquí está el ÚNICO cambio necesario
+        festival.agregarSubevento(new HorarioFestival("Día 1", "18:00 - 02:00"));
+        festival.agregarSubevento(new HorarioFestival("Día 2", "17:00 - 03:00"));
 
         // ✅ Añadir eventos al catálogo
         catalogo.agregarEvento(concierto);
