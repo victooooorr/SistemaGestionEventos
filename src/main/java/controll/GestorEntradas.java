@@ -15,6 +15,10 @@ import java.util.UUID;
 public class GestorEntradas {
 
     public Venta comprar(Evento evento, Cliente cliente, int cantidad, Entrada entrada, ContextoPago pago) {
+        System.out.println("DEBUG cliente en compra = " + cliente);
+        System.out.println("DEBUG evento en compra = " + evento);
+        System.out.println("DEBUG cantidad = " + cantidad);
+    
         if (evento == null) throw new EventoNoEncontradoException("null");
 
         if (evento.getAforoDisponible() < cantidad) {
@@ -30,6 +34,7 @@ public class GestorEntradas {
 
         Venta venta = new Venta(UUID.randomUUID().toString(), cliente, evento, cantidad, total);
         CatalogoEventos.getInstancia().registrarVenta(venta);
+        
         Ticket.generar(venta);
 
         return venta;

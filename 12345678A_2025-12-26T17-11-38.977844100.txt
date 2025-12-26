@@ -1,0 +1,8 @@
+Ticket de compra
+----------------
+ID: 5b8956b0-0b1d-4d5d-9715-d1a1dea78129
+Cliente: Ana López
+Evento: IA en 2025
+Cantidad: 4
+Precio final: 84,00€
+Fecha: 2025-12-26T17:11:38.977844100

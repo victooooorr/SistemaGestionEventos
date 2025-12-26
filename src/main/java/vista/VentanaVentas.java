@@ -1,7 +1,7 @@
 package vista;
 
 import controll.ProxyVentas;
-import controll.Venta;
+import modelo.ventas.Venta;
 import modelo.usuarios.Administrador;
 
 import javax.swing.*;
@@ -27,7 +27,7 @@ public class VentanaVentas extends JFrame {
     private void initComponents(Administrador admin) {
 
         modelo = new DefaultTableModel(
-                new String[]{"Fecha", "Cliente", "Evento", "Cantidad", "Método de pago"},
+                new String[]{"Fecha", "Cliente", "Evento", "Cantidad", "Precio final"},
                 0
         );
 
@@ -52,7 +52,7 @@ public class VentanaVentas extends JFrame {
                     v.getCliente().getNombre(),
                     v.getEvento().getNombre(),
                     v.getCantidad(),
-                    v.getMetodoPago()
+                    v.getPrecioFinal()
             });
         }
     }

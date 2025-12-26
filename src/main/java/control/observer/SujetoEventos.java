@@ -14,8 +14,8 @@ public class SujetoEventos {
         observadores.remove(o);
     }
 
-    // ✅ Método protegido para acceder a la lista desde subclases
-    protected List<Observador> getObservadores() {
-        return observadores;
-    }
+    public List<Observador> getObservadores() {
+    return new ArrayList<>(observadores); // ← COPIA SEGURA
+}
+
 }

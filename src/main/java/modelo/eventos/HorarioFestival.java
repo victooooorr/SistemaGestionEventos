@@ -23,4 +23,9 @@ public class HorarioFestival implements ComponenteEvento {
     public String getHorario() {
         return horario;
     }
+    @Override
+    public String toString() {
+        return nombre + " — " + horario;
+    }
+
 }

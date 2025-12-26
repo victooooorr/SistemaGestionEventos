@@ -5,6 +5,7 @@ import modelo.usuarios.Usuario;
 
 import java.util.Collections;
 import java.util.List;
+import modelo.ventas.Venta;
 
 public class ProxyVentas implements IVentas {
 

@@ -1,24 +1,39 @@
 package vista;
 
+import control.observer.Observador;
 import controll.CatalogoEventos;
+import controll.GestorEntradas;
+
 import modelo.eventos.Evento;
 import modelo.eventos.Festival;
-import modelo.eventos.ComponenteEvento;
-import modelo.eventos.HorarioFestival;
 import modelo.usuarios.Cliente;
+
+import modelo.entradas.Entrada;
+import modelo.entradas.EntradaBasica;
+import modelo.entradas.EntradaVIP;
+import modelo.entradas.EntradaConConsumicion;
+
+import modelo.pagos.ContextoPago;
+import modelo.pagos.PagoTarjeta;
+import modelo.pagos.PagoTransferencia;
+import modelo.pagos.PagoPayPal;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Collection;
-import java.util.List;
 
-public class VentanaCliente extends JFrame {
+public class VentanaCliente extends JFrame implements Observador {
 
     private final Cliente cliente;
     private final CatalogoEventos catalogo;
     private JTable tablaEventos;
     private DefaultTableModel modeloTabla;
+
+    // ✅ Nuevos componentes para evitar castings inseguros
+    private JComboBox<String> comboMetodoPago;
+    private JComboBox<String> comboTipoEntrada;
+    private JSpinner spinnerCantidad;
 
     public VentanaCliente(Cliente cliente) {
         this.cliente = cliente;
@@ -32,8 +47,16 @@ public class VentanaCliente extends JFrame {
         initComponents();
     }
 
+    @Override
+    public void actualizar(Evento e) {
+        cargarEventos();
+    }
+
     private void initComponents() {
-        modeloTabla = new DefaultTableModel(new Object[]{"Código", "Nombre", "Fecha", "Lugar", "Precio", "Aforo disponible"}, 0);
+        modeloTabla = new DefaultTableModel(
+                new Object[]{"Código", "Nombre", "Fecha", "Lugar", "Precio", "Aforo disponible"}, 0
+        );
+
         tablaEventos = new JTable(modeloTabla);
         JScrollPane scroll = new JScrollPane(tablaEventos);
 
@@ -45,23 +68,29 @@ public class VentanaCliente extends JFrame {
         JButton misTickets = new JButton("Mis Tickets");
         JButton verHorarios = new JButton("Ver horarios");
 
-        JComboBox<String> metodoPago = new JComboBox<>(new String[]{"Tarjeta", "Bizum", "Transferencia"});
-        JComboBox<String> tipoEntrada = new JComboBox<>(new String[]{"Básica", "VIP", "Premium"});
+        comboMetodoPago = new JComboBox<>(new String[]{"Tarjeta", "Transferencia", "PayPal"});
+        comboTipoEntrada = new JComboBox<>(new String[]{"Básica", "VIP", "Premium"});
+        spinnerCantidad = new JSpinner(new SpinnerNumberModel(1, 1, 10, 1));
 
         panelBotones.add(comprar);
         panelBotones.add(refrescar);
         panelBotones.add(misTickets);
         panelBotones.add(verHorarios);
         panelBotones.add(new JLabel("Método de pago:"));
-        panelBotones.add(metodoPago);
+        panelBotones.add(comboMetodoPago);
         panelBotones.add(new JLabel("Tipo de entrada:"));
-        panelBotones.add(tipoEntrada);
+        panelBotones.add(comboTipoEntrada);
+        panelBotones.add(new JLabel("Cantidad:"));
+        panelBotones.add(spinnerCantidad);
 
         add(scroll, BorderLayout.CENTER);
         add(panelBotones, BorderLayout.EAST);
 
         refrescar.addActionListener(e -> cargarEventos());
         verHorarios.addActionListener(e -> verHorariosFestival());
+        comprar.addActionListener(e -> comprarEntrada());
+        misTickets.addActionListener(e -> verMisTickets());
+
 
         cargarEventos();
     }
@@ -72,6 +101,8 @@ public class VentanaCliente extends JFrame {
         Collection<Evento> eventos = catalogo.listarEventos();
 
         for (Evento e : eventos) {
+            e.agregarObservador(this);
+
             modeloTabla.addRow(new Object[]{
                     e.getCodigo(),
                     e.getNombre(),
@@ -81,7 +112,51 @@ public class VentanaCliente extends JFrame {
                     e.getAforoDisponible()
             });
         }
-}
+    }
+
+    private void comprarEntrada() {
+        int fila = tablaEventos.getSelectedRow();
+
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un evento primero.");
+            return;
+        }
+
+        String codigo = (String) modeloTabla.getValueAt(fila, 0);
+
+        try {
+            Evento evento = catalogo.buscarEvento(codigo);
+
+            String tipo = (String) comboTipoEntrada.getSelectedItem();
+            String metodo = (String) comboMetodoPago.getSelectedItem();
+            int cantidad = (int) spinnerCantidad.getValue();
+
+            Entrada entrada = new EntradaBasica(evento);
+
+            if (tipo.equals("VIP")) {
+                entrada = new EntradaVIP(entrada);
+            } else if (tipo.equals("Premium")) {
+                entrada = new EntradaConConsumicion(entrada);
+            }
+
+            ContextoPago pago = new ContextoPago();
+
+            switch (metodo) {
+                case "Tarjeta" -> pago.setEstrategia(new PagoTarjeta());
+                case "Transferencia" -> pago.setEstrategia(new PagoTransferencia());
+                case "PayPal" -> pago.setEstrategia(new PagoPayPal());
+            }
+
+            new GestorEntradas().comprar(evento, cliente, cantidad, entrada, pago);
+
+            JOptionPane.showMessageDialog(this, "Entrada comprada correctamente.");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+
+        }
+    }
 
     private void verHorariosFestival() {
         int fila = tablaEventos.getSelectedRow();
@@ -106,4 +181,13 @@ public class VentanaCliente extends JFrame {
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
+    private void verMisTickets() {
+        new VentanaTickets(cliente).setVisible(true);
+    }
+
 }
+
+
+
+
+

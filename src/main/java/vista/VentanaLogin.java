@@ -53,28 +53,25 @@ public class VentanaLogin extends JFrame {
         try {
             Usuario u = gestorUsuarios.login(correo, clave);
 
-            // ✅ Registrar cliente como observador
+            // 👉 Si es cliente
             if (u instanceof Cliente cliente) {
                 CatalogoEventos.getInstancia().agregarObservador(cliente);
                 JOptionPane.showMessageDialog(this, "Bienvenido " + cliente.getNombre());
-                // Aquí abrirías VentanaCliente
+                new VentanaCliente(cliente).setVisible(true);
+                this.dispose();
+                return;
             }
 
-             // ✅ Si es administrador, abrir VentanaAdministrador
+            // 👉 Si es administrador
             if (u instanceof Administrador admin) {
+                JOptionPane.showMessageDialog(this, "Bienvenido Administrador " + admin.getNombre());
                 new VentanaAdministrador(admin).setVisible(true);
                 this.dispose();
             }
-
-            if (u instanceof Cliente cliente) {
-                CatalogoEventos.getInstancia().agregarObservador(cliente);
-                new VentanaCliente(cliente).setVisible(true);
-                this.dispose();
-            }
-
 
         } catch (UsuarioNoEncontradoException | CredencialesIncorrectasException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
+

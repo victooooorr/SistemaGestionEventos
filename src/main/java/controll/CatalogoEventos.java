@@ -47,6 +47,10 @@ public class CatalogoEventos extends SujetoEventos {
     public Collection<Evento> listarEventos() {
         return Collections.unmodifiableCollection(eventos.values());
     }
+    public void eliminarEvento(String codigo) {
+    eventos.remove(codigo);
+}
+
 }
 
 

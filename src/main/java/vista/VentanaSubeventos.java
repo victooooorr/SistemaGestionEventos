@@ -38,7 +38,8 @@ public class VentanaSubeventos extends JFrame {
         modelo.clear();
 
         for (ComponenteEvento c : festival.getSubeventos()) {
-            modelo.addElement(c.getNombre());
+        modelo.addElement(c.toString());
         }
+
     }
 }

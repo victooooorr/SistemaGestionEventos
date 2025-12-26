@@ -1,11 +1,15 @@
 package modelo.eventos;
 
+import control.observer.SujetoEventos;
+import control.observer.Observador;
+
 import java.time.LocalDateTime;
 
-public abstract class Evento implements ComponenteEvento {
+public abstract class Evento extends SujetoEventos implements ComponenteEvento {
+
     protected String codigo;
     protected String nombre;
-    protected String tipo; // Concierto, Teatro, Conferencia, Festival
+    protected String tipo;
     protected LocalDateTime fechaHora;
     protected String lugar;
     protected int aforoMaximo;
@@ -15,6 +19,7 @@ public abstract class Evento implements ComponenteEvento {
 
     public Evento(String codigo, String nombre, String tipo, LocalDateTime fechaHora,
                   String lugar, int aforoMaximo, double precioBase, String urlInfo) {
+
         this.codigo = codigo;
         this.nombre = nombre;
         this.tipo = tipo;
@@ -38,10 +43,17 @@ public abstract class Evento implements ComponenteEvento {
         if (cantidad <= 0 || aforoDisponible < cantidad) {
             throw new IllegalArgumentException("No hay aforo suficiente.");
         }
+
         aforoDisponible -= cantidad;
+
+        // 🔔 Notificar a todos los observadores
+        for (Observador o : getObservadores()) {
+            o.actualizar(this);
+        }
     }
 
-    @Override 
-    public void mostrarInformacion() { 
-        System.out.println(getNombre() + " - " + getFechaHora() + " - " + getLugar()); }
+    @Override
+    public void mostrarInformacion() {
+        System.out.println(getNombre() + " - " + getFechaHora() + " - " + getLugar());
+    }
 }
