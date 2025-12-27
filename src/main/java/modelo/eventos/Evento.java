@@ -46,10 +46,11 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
 
         aforoDisponible -= cantidad;
 
-        // 🔔 Notificar a todos los observadores
-        for (Observador o : getObservadores()) {
-            o.actualizar(this);
-        }
+        // 🔔 Notificación con mensaje personalizado
+        notificarMensaje(
+                "El aforo del evento '" + nombre + "' ha cambiado. Nuevo aforo: " + aforoDisponible,
+                this
+        );
     }
 
     @Override
@@ -57,3 +58,4 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
         System.out.println(getNombre() + " - " + getFechaHora() + " - " + getLugar());
     }
 }
+

@@ -30,36 +30,57 @@ public class VentanaCliente extends JFrame implements Observador {
     private JTable tablaEventos;
     private DefaultTableModel modeloTabla;
 
-    // ✅ Nuevos componentes para evitar castings inseguros
     private JComboBox<String> comboMetodoPago;
     private JComboBox<String> comboTipoEntrada;
     private JSpinner spinnerCantidad;
+
+    // 🟦 NUEVO: Panel de notificaciones
+    private JTextArea areaNotificaciones;
 
     public VentanaCliente(Cliente cliente) {
         this.cliente = cliente;
         this.catalogo = CatalogoEventos.getInstancia();
 
         setTitle("Panel de Cliente - Bienvenido " + cliente.getNombre());
-        setSize(800, 500);
+        setSize(900, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         initComponents();
     }
 
+    // 🟦 OBSERVER: actualización estándar
     @Override
     public void actualizar(Evento e) {
         cargarEventos();
+        areaNotificaciones.append(
+                "[Actualización] " + e.getNombre() +
+                " | Nuevo aforo: " + e.getAforoDisponible() + "\n"
+        );
+    }
+
+    // 🟦 OBSERVER: mensajes personalizados
+    @Override
+    public void actualizarMensaje(String mensaje, Evento e) {
+        areaNotificaciones.append("[Notificación] " + mensaje + "\n");
     }
 
     private void initComponents() {
+
+        setLayout(new BorderLayout());
+
+        // ---------------- TABLA DE EVENTOS ----------------
         modeloTabla = new DefaultTableModel(
                 new Object[]{"Código", "Nombre", "Fecha", "Lugar", "Precio", "Aforo disponible"}, 0
         );
 
         tablaEventos = new JTable(modeloTabla);
-        JScrollPane scroll = new JScrollPane(tablaEventos);
+        JScrollPane scrollTabla = new JScrollPane(tablaEventos);
+        scrollTabla.setBorder(BorderFactory.createTitledBorder("Eventos disponibles"));
 
+        add(scrollTabla, BorderLayout.CENTER);
+
+        // ---------------- PANEL DE BOTONES ----------------
         JPanel panelBotones = new JPanel();
         panelBotones.setLayout(new GridLayout(0, 1, 5, 5));
 
@@ -83,14 +104,24 @@ public class VentanaCliente extends JFrame implements Observador {
         panelBotones.add(new JLabel("Cantidad:"));
         panelBotones.add(spinnerCantidad);
 
-        add(scroll, BorderLayout.CENTER);
         add(panelBotones, BorderLayout.EAST);
 
+        // ---------------- PANEL DE NOTIFICACIONES ----------------
+        areaNotificaciones = new JTextArea();
+        areaNotificaciones.setEditable(false);
+        areaNotificaciones.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        JScrollPane scrollNotificaciones = new JScrollPane(areaNotificaciones);
+        scrollNotificaciones.setPreferredSize(new Dimension(900, 150));
+        scrollNotificaciones.setBorder(BorderFactory.createTitledBorder("Notificaciones"));
+
+        add(scrollNotificaciones, BorderLayout.SOUTH);
+
+        // ---------------- LISTENERS ----------------
         refrescar.addActionListener(e -> cargarEventos());
         verHorarios.addActionListener(e -> verHorariosFestival());
         comprar.addActionListener(e -> comprarEntrada());
         misTickets.addActionListener(e -> verMisTickets());
-
 
         cargarEventos();
     }
@@ -133,11 +164,8 @@ public class VentanaCliente extends JFrame implements Observador {
 
             Entrada entrada = new EntradaBasica(evento);
 
-            if (tipo.equals("VIP")) {
-                entrada = new EntradaVIP(entrada);
-            } else if (tipo.equals("Premium")) {
-                entrada = new EntradaConConsumicion(entrada);
-            }
+            if (tipo.equals("VIP")) entrada = new EntradaVIP(entrada);
+            else if (tipo.equals("Premium")) entrada = new EntradaConConsumicion(entrada);
 
             ContextoPago pago = new ContextoPago();
 
@@ -154,7 +182,6 @@ public class VentanaCliente extends JFrame implements Observador {
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
-
         }
     }
 
@@ -181,10 +208,10 @@ public class VentanaCliente extends JFrame implements Observador {
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
+
     private void verMisTickets() {
         new VentanaTickets(cliente).setVisible(true);
     }
-
 }
 
 
