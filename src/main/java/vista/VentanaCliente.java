@@ -3,6 +3,7 @@ package vista;
 import control.observer.Observador;
 import controll.CatalogoEventos;
 import controll.GestorEntradas;
+import controll.GestorUsuarios;
 
 import modelo.eventos.Evento;
 import modelo.eventos.Festival;
@@ -34,7 +35,7 @@ public class VentanaCliente extends JFrame implements Observador {
     private JComboBox<String> comboTipoEntrada;
     private JSpinner spinnerCantidad;
 
-    // 🟦 NUEVO: Panel de notificaciones
+    // 🟦 Panel de notificaciones
     private JTextArea areaNotificaciones;
 
     public VentanaCliente(Cliente cliente) {
@@ -80,7 +81,7 @@ public class VentanaCliente extends JFrame implements Observador {
 
         add(scrollTabla, BorderLayout.CENTER);
 
-        // ---------------- PANEL DE BOTONES ----------------
+        // ---------------- PANEL LATERAL (COMPRA) ----------------
         JPanel panelBotones = new JPanel();
         panelBotones.setLayout(new GridLayout(0, 1, 5, 5));
 
@@ -106,22 +107,45 @@ public class VentanaCliente extends JFrame implements Observador {
 
         add(panelBotones, BorderLayout.EAST);
 
-        // ---------------- PANEL DE NOTIFICACIONES ----------------
+        // ---------------- PANEL INFERIOR (BOTONES + NOTIFICACIONES) ----------------
+        JPanel panelInferior = new JPanel(new BorderLayout());
+
+        // Botones inferiores
+        JPanel panelBotonesInferior = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        JButton btnCerrarSesion = new JButton("Cerrar sesión");
+        JButton btnSalir = new JButton("Salir");
+
+        panelBotonesInferior.add(btnCerrarSesion);
+        panelBotonesInferior.add(btnSalir);
+
+        // Panel de notificaciones
         areaNotificaciones = new JTextArea();
         areaNotificaciones.setEditable(false);
         areaNotificaciones.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         JScrollPane scrollNotificaciones = new JScrollPane(areaNotificaciones);
-        scrollNotificaciones.setPreferredSize(new Dimension(900, 150));
+        scrollNotificaciones.setPreferredSize(new Dimension(900, 120));
         scrollNotificaciones.setBorder(BorderFactory.createTitledBorder("Notificaciones"));
 
-        add(scrollNotificaciones, BorderLayout.SOUTH);
+        panelInferior.add(panelBotonesInferior, BorderLayout.NORTH);
+        panelInferior.add(scrollNotificaciones, BorderLayout.CENTER);
+
+        add(panelInferior, BorderLayout.SOUTH);
 
         // ---------------- LISTENERS ----------------
         refrescar.addActionListener(e -> cargarEventos());
         verHorarios.addActionListener(e -> verHorariosFestival());
         comprar.addActionListener(e -> comprarEntrada());
         misTickets.addActionListener(e -> verMisTickets());
+
+        btnCerrarSesion.addActionListener(e -> {
+    dispose();
+    new VentanaLogin(GestorUsuarios.getInstancia()).setVisible(true);
+});
+
+
+        btnSalir.addActionListener(e -> System.exit(0));
 
         cargarEventos();
     }
@@ -132,7 +156,8 @@ public class VentanaCliente extends JFrame implements Observador {
         Collection<Evento> eventos = catalogo.listarEventos();
 
         for (Evento e : eventos) {
-            e.agregarObservador(this);
+           if (!e.getObservadores().contains(this)) { 
+               e.agregarObservador(this); }
 
             modeloTabla.addRow(new Object[]{
                     e.getCodigo(),

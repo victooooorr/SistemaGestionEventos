@@ -1,5 +1,5 @@
 ===== TICKET =====
-Fecha de compra: 2025-12-26T17:18:32.684761300
+Fecha de compra: 2025-12-27T14:48:13.224443700
 
 Cliente:
 Nombre: Ana López
@@ -8,9 +8,9 @@ Correo: ana
 Evento:
 Código: EV003
 Nombre: IA en 2025
-Fecha: 2026-01-15T17:17:56.213115200
+Fecha: 2026-01-16T14:48:03.047188300
 Lugar: IFEMA Madrid
 
-Cantidad: 3
-Precio total: 45.0 €
+Cantidad: 1
+Precio total: 15.0 €
 ==========================

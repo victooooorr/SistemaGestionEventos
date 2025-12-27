@@ -2,9 +2,9 @@ package vista;
 
 import control.observer.Observador;
 import controll.CatalogoEventos;
+import controll.GestorUsuarios;
 
 import modelo.eventos.Evento;
-import modelo.eventos.Festival;
 import modelo.usuarios.Administrador;
 
 import javax.swing.*;
@@ -19,31 +19,53 @@ public class VentanaAdministrador extends JFrame implements Observador {
     private DefaultTableModel modeloTabla;
     private final Administrador admin;
 
+    // 🟦 Panel de notificaciones
+    private JTextArea areaNotificaciones;
+
     public VentanaAdministrador(Administrador admin) {
         this.admin = admin;
         this.catalogo = CatalogoEventos.getInstancia();
 
         setTitle("Panel de Administrador - " + admin.getNombre());
-        setSize(800, 500);
+        setSize(900, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         initComponents();
     }
 
+    // 🟦 OBSERVER: actualización estándar
     @Override
     public void actualizar(Evento e) {
         cargarEventos();
+        areaNotificaciones.append(
+                "[Actualización] " + e.getNombre() +
+                " | Nuevo aforo: " + e.getAforoDisponible() + "\n"
+        );
+    }
+
+    // 🟦 OBSERVER: mensajes personalizados
+    @Override
+    public void actualizarMensaje(String mensaje, Evento e) {
+        areaNotificaciones.append("[Notificación] " + mensaje + "\n");
     }
 
     private void initComponents() {
+
+        setLayout(new BorderLayout());
+
+        // ---------------- TABLA DE EVENTOS ----------------
         modeloTabla = new DefaultTableModel(
                 new Object[]{"Código", "Nombre", "Fecha", "Lugar", "Precio", "Aforo disponible"}, 0
         );
 
         tablaEventos = new JTable(modeloTabla);
-        JScrollPane scroll = new JScrollPane(tablaEventos);
+        JScrollPane scrollTabla = new JScrollPane(tablaEventos);
+        scrollTabla.setBorder(BorderFactory.createTitledBorder("Eventos registrados"));
 
+        add(scrollTabla, BorderLayout.CENTER);
+
+        // ---------------- PANEL LATERAL ----------------
         JPanel panelBotones = new JPanel();
         panelBotones.setLayout(new GridLayout(0, 1, 5, 5));
 
@@ -55,12 +77,45 @@ public class VentanaAdministrador extends JFrame implements Observador {
         panelBotones.add(eliminar);
         panelBotones.add(modificar);
 
-        add(scroll, BorderLayout.CENTER);
         add(panelBotones, BorderLayout.EAST);
 
+        // ---------------- PANEL INFERIOR (BOTONES + NOTIFICACIONES) ----------------
+        JPanel panelInferior = new JPanel(new BorderLayout());
+
+        // Botones inferiores
+        JPanel panelBotonesInferior = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        JButton btnCerrarSesion = new JButton("Cerrar sesión");
+        JButton btnSalir = new JButton("Salir");
+
+        panelBotonesInferior.add(btnCerrarSesion);
+        panelBotonesInferior.add(btnSalir);
+
+        // Panel de notificaciones
+        areaNotificaciones = new JTextArea();
+        areaNotificaciones.setEditable(false);
+        areaNotificaciones.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        JScrollPane scrollNotificaciones = new JScrollPane(areaNotificaciones);
+        scrollNotificaciones.setPreferredSize(new Dimension(900, 150));
+        scrollNotificaciones.setBorder(BorderFactory.createTitledBorder("Notificaciones del sistema"));
+
+        panelInferior.add(panelBotonesInferior, BorderLayout.NORTH);
+        panelInferior.add(scrollNotificaciones, BorderLayout.CENTER);
+
+        add(panelInferior, BorderLayout.SOUTH);
+
+        // ---------------- LISTENERS ----------------
         refrescar.addActionListener(e -> cargarEventos());
         eliminar.addActionListener(e -> eliminarEvento());
         modificar.addActionListener(e -> modificarEvento());
+
+        btnCerrarSesion.addActionListener(e -> {
+            dispose();
+            new VentanaLogin(GestorUsuarios.getInstancia()).setVisible(true);
+        });
+
+        btnSalir.addActionListener(e -> System.exit(0));
 
         cargarEventos();
     }
@@ -72,7 +127,10 @@ public class VentanaAdministrador extends JFrame implements Observador {
 
         for (Evento e : eventos) {
 
-            e.agregarObservador(this);
+            // Evitar registrar varias veces al administrador
+            if (!e.getObservadores().contains(this)) {
+                e.agregarObservador(this);
+            }
 
             modeloTabla.addRow(new Object[]{
                     e.getCodigo(),
@@ -113,5 +171,6 @@ public class VentanaAdministrador extends JFrame implements Observador {
                 "La función de modificar evento aún no está implementada.");
     }
 }
+
 
 

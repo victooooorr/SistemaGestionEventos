@@ -29,6 +29,8 @@ public class VentanaLogin extends JFrame {
 
         initComponents();
     }
+    
+
 
     private void initComponents() {
         setLayout(new GridLayout(3, 2));
