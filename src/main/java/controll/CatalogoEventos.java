@@ -60,6 +60,24 @@ public class CatalogoEventos extends SujetoEventos {
         evento.notificarMensaje(mensaje, evento);
     }
 }
+    public void modificarEvento(Evento original, Evento modificado) {
+
+    if (original == null || modificado == null) {
+        throw new IllegalArgumentException("Los eventos no pueden ser nulos.");
+    }
+
+    // Reemplazar el evento en el mapa
+    eventos.put(original.getCodigo(), modificado);
+
+    // Notificación global persistente
+    String mensaje = "El evento '" + original.getNombre() + "' ha sido modificado.";
+
+    GestorNotificaciones.agregar(mensaje);
+
+    // Notificar a los observadores del evento original
+    original.notificarMensaje(mensaje, original);
+}
+
 
 
 }
