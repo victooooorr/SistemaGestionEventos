@@ -2,6 +2,7 @@ package vista;
 
 import control.observer.Observador;
 import controll.CatalogoEventos;
+import controll.GestorNotificaciones;
 import controll.GestorUsuarios;
 
 import modelo.eventos.Evento;
@@ -100,6 +101,11 @@ public class VentanaAdministrador extends JFrame implements Observador {
         scrollNotificaciones.setPreferredSize(new Dimension(900, 150));
         scrollNotificaciones.setBorder(BorderFactory.createTitledBorder("Notificaciones del sistema"));
 
+        for (String n : GestorNotificaciones.obtener()) {
+    areaNotificaciones.append(n + "\n");
+}
+
+        
         panelInferior.add(panelBotonesInferior, BorderLayout.NORTH);
         panelInferior.add(scrollNotificaciones, BorderLayout.CENTER);
 

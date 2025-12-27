@@ -2,6 +2,7 @@ package modelo.eventos;
 
 import control.observer.SujetoEventos;
 import control.observer.Observador;
+import controll.GestorNotificaciones;
 
 import java.time.LocalDateTime;
 
@@ -40,18 +41,21 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
     public double getPrecioBase() { return precioBase; }
 
     public void reducirAforo(int cantidad) {
-        if (cantidad <= 0 || aforoDisponible < cantidad) {
-            throw new IllegalArgumentException("No hay aforo suficiente.");
-        }
-
-        aforoDisponible -= cantidad;
-
-        // 🔔 Notificación con mensaje personalizado
-        notificarMensaje(
-                "El aforo del evento '" + nombre + "' ha cambiado. Nuevo aforo: " + aforoDisponible,
-                this
-        );
+    if (cantidad <= 0 || aforoDisponible < cantidad) {
+        throw new IllegalArgumentException("No hay aforo suficiente.");
     }
+
+    aforoDisponible -= cantidad;
+
+    String mensaje = "El aforo del evento '" + nombre + "' ha cambiado. Nuevo aforo: " + aforoDisponible;
+
+    // 🔥 Guardar notificación global
+    GestorNotificaciones.agregar(mensaje);
+
+    // 🔔 Notificar a observadores
+    notificarMensaje(mensaje, this);
+}
+
 
     @Override
     public void mostrarInformacion() {
