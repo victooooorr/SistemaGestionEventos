@@ -48,8 +48,19 @@ public class CatalogoEventos extends SujetoEventos {
         return Collections.unmodifiableCollection(eventos.values());
     }
     public void eliminarEvento(String codigo) {
-    eventos.remove(codigo);
+    Evento evento = eventos.remove(codigo);
+
+    if (evento != null) {
+        String mensaje = "El evento '" + evento.getNombre() + "' ha sido cancelado.";
+
+        // Guardar notificación global
+        GestorNotificaciones.agregar(mensaje);
+
+        // Notificar a todos los observadores registrados
+        evento.notificarMensaje(mensaje, evento);
+    }
 }
+
 
 }
 

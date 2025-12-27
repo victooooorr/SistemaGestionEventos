@@ -24,6 +24,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Collection;
+import modelo.entradas.factory.FabricaEntradas;
 
 public class VentanaCliente extends JFrame implements Observador {
 
@@ -193,10 +194,7 @@ public class VentanaCliente extends JFrame implements Observador {
             String metodo = (String) comboMetodoPago.getSelectedItem();
             int cantidad = (int) spinnerCantidad.getValue();
 
-            Entrada entrada = new EntradaBasica(evento);
-
-            if (tipo.equals("VIP")) entrada = new EntradaVIP(entrada);
-            else if (tipo.equals("Premium")) entrada = new EntradaConConsumicion(entrada);
+           Entrada entrada = FabricaEntradas.crearEntrada(tipo, evento);
 
             ContextoPago pago = new ContextoPago();
 
