@@ -18,6 +18,22 @@ public class Concierto extends Evento {
         this.artista = artista;
         this.duracion = duracion;
     }
+@Override
+public Evento clonarConNuevosDatos(String nombre, LocalDateTime fecha, String lugar, double precio, int aforo) {
+    return new Concierto(
+            getCodigo(),
+            nombre,
+            fecha,
+            lugar,
+            aforo,
+            precio,
+            getUrlInfo(),   // este sí existe en Evento
+            this.genero,
+            this.artista,
+            this.duracion
+    );
+}
+
 
     @Override
     public void mostrarInformacion() {

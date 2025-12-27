@@ -18,6 +18,23 @@ public class Conferencia extends Evento {
         this.tema = tema;
         this.duracion = duracion;
     }
+@Override
+public Evento clonarConNuevosDatos(String nombre, LocalDateTime fecha, String lugar, double precio, int aforo) {
+    return new Conferencia(
+            getCodigo(),
+            nombre,
+            fecha,
+            lugar,
+            aforo,
+            precio,
+            getUrlInfo(),
+            this.ponente,
+            this.tema,
+            this.duracion
+    );
+}
+
+
 
     @Override
     public void mostrarInformacion() {

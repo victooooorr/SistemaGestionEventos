@@ -31,6 +31,14 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
         this.precioBase = precioBase;
         this.urlInfo = urlInfo;
     }
+    public abstract Evento clonarConNuevosDatos(
+        String nombre,
+        LocalDateTime fecha,
+        String lugar,
+        double precio,
+        int aforo
+);
+
 
     public String getCodigo() { return codigo; }
     public String getNombre() { return nombre; }
@@ -39,7 +47,7 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
     public String getLugar() { return lugar; }
     public int getAforoDisponible() { return aforoDisponible; }
     public double getPrecioBase() { return precioBase; }
-
+    public String getUrlInfo(){ return urlInfo; }
     public void reducirAforo(int cantidad) {
     if (cantidad <= 0 || aforoDisponible < cantidad) {
         throw new IllegalArgumentException("No hay aforo suficiente.");

@@ -25,6 +25,27 @@ public class Festival extends Evento {
     public List<ComponenteEvento> getSubeventos() {
         return subeventos;
     }
+    @Override
+public Evento clonarConNuevosDatos(String nombre, LocalDateTime fecha, String lugar, double precio, int aforo) {
+    Festival nuevo = new Festival(
+            getCodigo(),
+            nombre,
+            fecha,
+            lugar,
+            aforo,
+            precio,
+            getUrlInfo()
+    );
+
+    // copiar subeventos existentes
+    for (ComponenteEvento c : this.subeventos) {
+        nuevo.agregarSubevento(c);
+    }
+
+    return nuevo;
+}
+
+
 
     @Override
     public void mostrarInformacion() {

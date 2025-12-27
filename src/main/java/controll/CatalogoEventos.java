@@ -1,5 +1,6 @@
 package controll;
 
+import control.command.EliminarEventoCommand;
 import control.observer.SujetoEventos;
 import excepciones.EventoYaExisteException;
 import modelo.eventos.Evento;
@@ -7,6 +8,7 @@ import modelo.usuarios.Cliente;
 import modelo.ventas.Venta;
 
 import java.util.*;
+import javax.swing.JOptionPane;
 
 public class CatalogoEventos extends SujetoEventos {
 
@@ -47,36 +49,39 @@ public class CatalogoEventos extends SujetoEventos {
     public Collection<Evento> listarEventos() {
         return Collections.unmodifiableCollection(eventos.values());
     }
-    public void eliminarEvento(String codigo) {
-    Evento evento = eventos.remove(codigo);
-
-    if (evento != null) {
-        String mensaje = "El evento '" + evento.getNombre() + "' ha sido cancelado.";
-
-        // Guardar notificación global
-        GestorNotificaciones.agregar(mensaje);
-
-        // Notificar a todos los observadores registrados
-        evento.notificarMensaje(mensaje, evento);
-    }
-}
+    // MÉTODO NUEVO: modificar evento
     public void modificarEvento(Evento original, Evento modificado) {
 
-    if (original == null || modificado == null) {
-        throw new IllegalArgumentException("Los eventos no pueden ser nulos.");
+        if (original == null || modificado == null) {
+            throw new IllegalArgumentException("Los eventos no pueden ser nulos.");
+        }
+
+        // Reemplazar el evento en el mapa
+        eventos.put(original.getCodigo(), modificado);
+
+        // Notificación global persistente
+        String mensaje = "El evento '" + original.getNombre() + "' ha sido modificado.";
+        GestorNotificaciones.agregar(mensaje);
+
+        // Notificar a los observadores del evento original
+        original.notificarMensaje(mensaje, original);
     }
 
-    // Reemplazar el evento en el mapa
-    eventos.put(original.getCodigo(), modificado);
+    // MÉTODO MODIFICADO: eliminar evento
+    public void eliminarEvento(String codigo) {
+        Evento evento = eventos.remove(codigo);
 
-    // Notificación global persistente
-    String mensaje = "El evento '" + original.getNombre() + "' ha sido modificado.";
+        if (evento != null) {
+            String mensaje = "El evento '" + evento.getNombre() + "' ha sido cancelado.";
 
-    GestorNotificaciones.agregar(mensaje);
+            GestorNotificaciones.agregar(mensaje);
 
-    // Notificar a los observadores del evento original
-    original.notificarMensaje(mensaje, original);
-}
+            evento.notificarMensaje(mensaje, evento);
+        }
+    }
+
+
+    
 
 
 
