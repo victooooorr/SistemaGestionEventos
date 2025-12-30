@@ -1,12 +1,17 @@
 package vista;
 
 import controll.CatalogoEventos;
-import modelo.eventos.*;
+import modelo.eventos.Evento;
+import modelo.eventos.builder.ConciertoBuilder;
+import modelo.eventos.builder.ConferenciaBuilder;
+import modelo.eventos.builder.EventoBuilder;
+import modelo.eventos.builder.TeatroBuilder;
 
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import modelo.eventos.builder.FestivalAdapterBuilder;
 
 public class VentanaCrearEvento extends JFrame {
 
@@ -95,35 +100,49 @@ public class VentanaCrearEvento extends JFrame {
             int aforo = Integer.parseInt(txtAforo.getText().trim());
             String url = txtUrl.getText().trim();
 
-            LocalDateTime fecha = LocalDateTime.parse(fechaStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            if (codigo.isEmpty() || nombre.isEmpty() || fechaStr.isEmpty() || lugar.isEmpty() || url.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Todos los campos deben estar completos.");
+                return;
+            }
+
+            LocalDateTime fecha = LocalDateTime.parse(
+                    fechaStr,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+            );
 
             String tipo = (String) comboTipo.getSelectedItem();
 
-            Evento nuevo;
+            EventoBuilder builder;
 
             switch (tipo) {
                 case "Concierto":
-                    nuevo = new Concierto(codigo, nombre, fecha, lugar, aforo, precio, url,
-                            "Desconocido", "Artista", 90);
+                    builder = new ConciertoBuilder();
                     break;
 
                 case "Conferencia":
-                    nuevo = new Conferencia(codigo, nombre, fecha, lugar, aforo, precio, url,
-                            "Ponente", "Tema", 60);
-                    break;
-
-                case "Festival":
-                    nuevo = new Festival(codigo, nombre, fecha, lugar, aforo, precio, url);
+                    builder = new ConferenciaBuilder();
                     break;
 
                 case "Teatro":
-                    nuevo = new Teatro(codigo, nombre, fecha, lugar, aforo, precio, url,
-                            "Compañía", 120);
+                    builder = new TeatroBuilder();
                     break;
 
+                case "Festival":
+                    builder = new FestivalAdapterBuilder(); 
+                    break;
                 default:
-                    throw new IllegalStateException("Tipo no soportado");
+                    throw new IllegalStateException("Tipo de evento no soportado.");
             }
+
+            Evento nuevo = builder
+                    .conCodigo(codigo)
+                    .conNombre(nombre)
+                    .conFecha(fecha)
+                    .conLugar(lugar)
+                    .conPrecio(precio)
+                    .conAforo(aforo)
+                    .conUrl(url)
+                    .build();
 
             catalogo.agregarEvento(nuevo);
 
@@ -137,4 +156,6 @@ public class VentanaCrearEvento extends JFrame {
         }
     }
 }
+
+
 
