@@ -121,7 +121,16 @@ public class VentanaAdministrador extends JFrame implements Observador {
         for (String n : GestorNotificaciones.obtener()) {
             areaNotificaciones.append(n + "\n");
         }
+        JButton crear = new JButton("Crear evento");
+        panelBotones.add(crear);
+
+        crear.addActionListener(e -> abrirVentanaCrearEvento());
+
     }
+    private void abrirVentanaCrearEvento() {
+    new VentanaCrearEvento(this, catalogo).setVisible(true);
+}
+
 
     public void cargarEventos() {
         modeloTabla.setRowCount(0);

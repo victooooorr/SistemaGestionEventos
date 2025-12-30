@@ -29,7 +29,9 @@ public class CatalogoEventos extends SujetoEventos {
     }
 
     eventos.put(e.getCodigo(), e);
-
+    // 🔥 Notificación persistente 
+    String mensaje = "Se ha creado un nuevo evento: " + e.getNombre(); 
+    GestorNotificaciones.agregar(mensaje); // 🔥 Notificar a observadores (admin y clientes) e.notificarMensaje(mensaje, e);    
     // ✅ Notificar solo a clientes con preferencias que coincidan
     getObservadores().stream()
             .filter(o -> o instanceof Cliente)
