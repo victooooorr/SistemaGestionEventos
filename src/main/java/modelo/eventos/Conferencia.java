@@ -43,5 +43,10 @@ public Evento clonarConNuevosDatos(String nombre, LocalDateTime fecha, String lu
         System.out.println("Tema: " + tema);
         System.out.println("Duración: " + duracion + " min");
     }
+    @Override
+public String toString() {
+    return "[Conferencia] " + getNombre() + " - " + getFechaHora() + " - " + getLugar();
+}
+
 }
 

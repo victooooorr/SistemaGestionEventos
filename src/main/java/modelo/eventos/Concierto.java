@@ -42,4 +42,9 @@ public Evento clonarConNuevosDatos(String nombre, LocalDateTime fecha, String lu
         System.out.println("Artista: " + artista);
         System.out.println("Duración: " + duracion + " min");
     }
+    @Override
+public String toString() {
+    return "[Concierto] " + getNombre() + " - " + getFechaHora() + " - " + getLugar();
+}
+
 }

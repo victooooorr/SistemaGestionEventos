@@ -55,6 +55,11 @@ public Evento clonarConNuevosDatos(String nombre, LocalDateTime fecha, String lu
             c.mostrarInformacion();
         }
     }
+    @Override
+public String toString() {
+    return "[Festival] " + getNombre() + " - " + getFechaHora() + " - " + getLugar();
+}
+
 }
 
 

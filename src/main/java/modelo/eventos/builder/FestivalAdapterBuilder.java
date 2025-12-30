@@ -4,6 +4,9 @@ import modelo.eventos.Evento;
 import modelo.eventos.Festival;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import modelo.eventos.ComponenteEvento;
 
 public class FestivalAdapterBuilder implements EventoBuilder {
 
@@ -56,6 +59,18 @@ public class FestivalAdapterBuilder implements EventoBuilder {
         this.url = url;
         return this;
     }
+    private List<ComponenteEvento> subeventos = new ArrayList<>();
+
+    public FestivalAdapterBuilder conSubevento(ComponenteEvento sub) {
+        subeventos.add(sub);
+        return this;
+    }
+
+    public FestivalAdapterBuilder conSubeventos(List<ComponenteEvento> lista) {
+        subeventos.addAll(lista);
+        return this;
+    }
+
 
     @Override
     public Evento build() {
@@ -70,7 +85,8 @@ public class FestivalAdapterBuilder implements EventoBuilder {
                 url
         );
 
-        // Más adelante podremos añadir subeventos aquí
+        for (ComponenteEvento c : subeventos) { 
+            festival.agregarSubevento(c); }
 
         return festival;
     }

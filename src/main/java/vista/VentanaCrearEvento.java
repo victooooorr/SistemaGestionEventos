@@ -5,13 +5,13 @@ import modelo.eventos.Evento;
 import modelo.eventos.builder.ConciertoBuilder;
 import modelo.eventos.builder.ConferenciaBuilder;
 import modelo.eventos.builder.EventoBuilder;
+import modelo.eventos.builder.FestivalAdapterBuilder;
 import modelo.eventos.builder.TeatroBuilder;
 
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import modelo.eventos.builder.FestivalAdapterBuilder;
 
 public class VentanaCrearEvento extends JFrame {
 
@@ -91,71 +91,90 @@ public class VentanaCrearEvento extends JFrame {
     }
 
     private void crearEvento() {
-        try {
-            String codigo = txtCodigo.getText().trim();
-            String nombre = txtNombre.getText().trim();
-            String fechaStr = txtFecha.getText().trim();
-            String lugar = txtLugar.getText().trim();
-            double precio = Double.parseDouble(txtPrecio.getText().trim());
-            int aforo = Integer.parseInt(txtAforo.getText().trim());
-            String url = txtUrl.getText().trim();
+    try {
+        String codigo = txtCodigo.getText().trim();
+        String nombre = txtNombre.getText().trim();
+        String fechaStr = txtFecha.getText().trim();
+        String lugar = txtLugar.getText().trim();
+        double precio = Double.parseDouble(txtPrecio.getText().trim());
+        int aforo = Integer.parseInt(txtAforo.getText().trim());
+        String url = txtUrl.getText().trim();
 
-            if (codigo.isEmpty() || nombre.isEmpty() || fechaStr.isEmpty() || lugar.isEmpty() || url.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Todos los campos deben estar completos.");
-                return;
-            }
+        if (codigo.isEmpty() || nombre.isEmpty() || fechaStr.isEmpty() || lugar.isEmpty() || url.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Todos los campos deben estar completos.");
+            return;
+        }
 
-            LocalDateTime fecha = LocalDateTime.parse(
-                    fechaStr,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            );
+        LocalDateTime fecha = LocalDateTime.parse(
+                fechaStr,
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        );
 
-            String tipo = (String) comboTipo.getSelectedItem();
+        String tipo = (String) comboTipo.getSelectedItem();
 
-            EventoBuilder builder;
+        // 🔥 CASO ESPECIAL: FESTIVAL
+        if ("Festival".equals(tipo)) {
 
-            switch (tipo) {
-                case "Concierto":
-                    builder = new ConciertoBuilder();
-                    break;
-
-                case "Conferencia":
-                    builder = new ConferenciaBuilder();
-                    break;
-
-                case "Teatro":
-                    builder = new TeatroBuilder();
-                    break;
-
-                case "Festival":
-                    builder = new FestivalAdapterBuilder(); 
-                    break;
-                default:
-                    throw new IllegalStateException("Tipo de evento no soportado.");
-            }
-
-            Evento nuevo = builder
+            FestivalAdapterBuilder festivalBuilder = (FestivalAdapterBuilder) new FestivalAdapterBuilder()
                     .conCodigo(codigo)
                     .conNombre(nombre)
                     .conFecha(fecha)
                     .conLugar(lugar)
                     .conPrecio(precio)
                     .conAforo(aforo)
-                    .conUrl(url)
-                    .build();
+                    .conUrl(url);
 
-            catalogo.agregarEvento(nuevo);
+            // Abrimos la ventana de subeventos
+            new VentanaSubeventosFestival(festivalBuilder, catalogo, padre).setVisible(true);
 
-            JOptionPane.showMessageDialog(this, "Evento creado correctamente.");
-
-            padre.cargarEventos();
             dispose();
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al crear evento: " + ex.getMessage());
+            return;
         }
+
+        // 🔥 RESTO DE EVENTOS: usan EventoBuilder normal
+        EventoBuilder builder;
+
+        switch (tipo) {
+            case "Concierto":
+                builder = new ConciertoBuilder();
+                break;
+
+            case "Conferencia":
+                builder = new ConferenciaBuilder();
+                break;
+
+            case "Teatro":
+                builder = new TeatroBuilder();
+                break;
+
+            default:
+                throw new IllegalStateException("Tipo de evento no soportado.");
+        }
+
+        Evento nuevo = builder
+                .conCodigo(codigo)
+                .conNombre(nombre)
+                .conFecha(fecha)
+                .conLugar(lugar)
+                .conPrecio(precio)
+                .conAforo(aforo)
+                .conUrl(url)
+                .build();
+
+        catalogo.agregarEvento(nuevo);
+
+        JOptionPane.showMessageDialog(this, "Evento creado correctamente.");
+
+        padre.cargarEventos();
+        dispose();
+
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Error al crear evento: " + ex.getMessage());
     }
 }
+
+}
+
 
 
 

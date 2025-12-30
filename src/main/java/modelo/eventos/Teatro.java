@@ -32,5 +32,9 @@ public Evento clonarConNuevosDatos(String nombre, LocalDateTime fecha, String lu
             this.duracionMin
     );
 }
+@Override
+public String toString() {
+    return "[Teatro] " + getNombre() + " - " + getFechaHora() + " - " + getLugar();
+}
 
 }
