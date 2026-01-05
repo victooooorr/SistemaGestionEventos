@@ -15,10 +15,7 @@ public class VentanaSubeventosFestival extends JFrame {
     private final FestivalAdapterBuilder builder;
     private final CatalogoEventos catalogo;
     private final VentanaAdministrador padre;
-
     private DefaultListModel<String> modeloLista;
-    private JList<String> listaSubeventos;
-
     private List<ComponenteEvento> subeventos = new ArrayList<>();
 
     public VentanaSubeventosFestival(FestivalAdapterBuilder builder, CatalogoEventos catalogo, VentanaAdministrador padre) {
@@ -26,74 +23,55 @@ public class VentanaSubeventosFestival extends JFrame {
         this.catalogo = catalogo;
         this.padre = padre;
 
-        setTitle("Añadir subeventos al Festival");
-        setSize(500, 400);
+        setTitle("Configurar Festival");
+        setSize(600, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        Estilos.aplicarEstiloVentana(this);
 
         initComponents();
     }
 
     private void initComponents() {
+        setLayout(new BorderLayout());
+        add(Estilos.crearTitulo("Añadir Subeventos al Festival"), BorderLayout.NORTH);
 
         modeloLista = new DefaultListModel<>();
-        listaSubeventos = new JList<>(modeloLista);
-
+        JList<String> listaSubeventos = new JList<>(modeloLista);
+        listaSubeventos.setFont(Estilos.FONT_NORMAL);
+        
         JScrollPane scroll = new JScrollPane(listaSubeventos);
-        scroll.setBorder(BorderFactory.createTitledBorder("Subeventos añadidos"));
-
-        JButton btnAñadir = new JButton("Añadir subevento");
-        JButton btnEliminar = new JButton("Eliminar seleccionado");
-        JButton btnGuardar = new JButton("Guardar Festival");
-
-        btnAñadir.addActionListener(e -> abrirVentanaCrearSubevento());
-        btnEliminar.addActionListener(e -> eliminarSubevento());
-        btnGuardar.addActionListener(e -> guardarFestival());
-
-        JPanel panelBotones = new JPanel();
-        panelBotones.add(btnAñadir);
-        panelBotones.add(btnEliminar);
-        panelBotones.add(btnGuardar);
-
+        scroll.setBorder(BorderFactory.createTitledBorder("Agenda del Festival"));
         add(scroll, BorderLayout.CENTER);
-        add(panelBotones, BorderLayout.SOUTH);
-    }
 
-    private void abrirVentanaCrearSubevento() {
-        new VentanaCrearSubevento(this).setVisible(true);
+        JPanel panelBotones = new JPanel(new FlowLayout());
+        panelBotones.setBackground(Estilos.COLOR_FONDO);
+
+        JButton btnAñadir = Estilos.crearBoton("➕ Añadir Actividad", Estilos.COLOR_SECUNDARIO);
+        JButton btnGuardar = Estilos.crearBoton("💾 Finalizar Festival", Estilos.COLOR_PRIMARIO);
+
+        btnAñadir.addActionListener(e -> new VentanaCrearSubevento(this).setVisible(true));
+        
+        btnGuardar.addActionListener(e -> {
+            try {
+                builder.conSubeventos(subeventos);
+                Evento festival = builder.build();
+                catalogo.agregarEvento(festival);
+                JOptionPane.showMessageDialog(this, "Festival creado con éxito.");
+                padre.cargarEventos();
+                dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            }
+        });
+
+        panelBotones.add(btnAñadir);
+        panelBotones.add(btnGuardar);
+        add(panelBotones, BorderLayout.SOUTH);
     }
 
     public void agregarSubevento(ComponenteEvento sub) {
         subeventos.add(sub);
         modeloLista.addElement(sub.getNombre());
-    }
-
-    private void eliminarSubevento() {
-        int index = listaSubeventos.getSelectedIndex();
-        if (index == -1) {
-            JOptionPane.showMessageDialog(this, "Selecciona un subevento.");
-            return;
-        }
-
-        subeventos.remove(index);
-        modeloLista.remove(index);
-    }
-
-    private void guardarFestival() {
-        try {
-            builder.conSubeventos(subeventos);
-
-            Evento festival = builder.build();
-
-            catalogo.agregarEvento(festival);
-
-            JOptionPane.showMessageDialog(this, "Festival creado correctamente.");
-
-            padre.cargarEventos();
-            dispose();
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar festival: " + ex.getMessage());
-        }
     }
 }

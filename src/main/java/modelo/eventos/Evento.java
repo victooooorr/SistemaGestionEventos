@@ -1,9 +1,6 @@
 package modelo.eventos;
-
 import control.observer.SujetoEventos;
-import control.observer.Observador;
 import controll.GestorNotificaciones;
-
 import java.time.LocalDateTime;
 
 public abstract class Evento extends SujetoEventos implements ComponenteEvento {
@@ -17,6 +14,9 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
     protected int aforoDisponible;
     protected double precioBase;
     protected String urlInfo;
+    
+    protected String rutaImagen; 
+    protected EstadoEvento estado;
 
     public Evento(String codigo, String nombre, String tipo, LocalDateTime fechaHora,
                   String lugar, int aforoMaximo, double precioBase, String urlInfo) {
@@ -30,16 +30,15 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
         this.aforoDisponible = aforoMaximo;
         this.precioBase = precioBase;
         this.urlInfo = urlInfo;
+        
+        // Valores por defecto
+        this.rutaImagen = "/imagenes/default.png"; 
+        this.estado = EstadoEvento.ACTIVO;
     }
-    public abstract Evento clonarConNuevosDatos(
-        String nombre,
-        LocalDateTime fecha,
-        String lugar,
-        double precio,
-        int aforo
-);
 
+    public abstract Evento clonarConNuevosDatos(String nombre, LocalDateTime fecha, String lugar, double precio, int aforo);
 
+    // Getters existentes...
     public String getCodigo() { return codigo; }
     public String getNombre() { return nombre; }
     public String getTipo() { return tipo; }
@@ -48,26 +47,32 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
     public int getAforoDisponible() { return aforoDisponible; }
     public double getPrecioBase() { return precioBase; }
     public String getUrlInfo(){ return urlInfo; }
-    public void reducirAforo(int cantidad) {
-    if (cantidad <= 0 || aforoDisponible < cantidad) {
-        throw new IllegalArgumentException("No hay aforo suficiente.");
+
+    // --- NUEVOS GETTERS Y SETTERS ---
+    public String getRutaImagen() { return rutaImagen; }
+    public void setRutaImagen(String rutaImagen) { this.rutaImagen = rutaImagen; }
+
+    public EstadoEvento getEstado() { return estado; }
+    
+    public void setEstado(EstadoEvento estado) {
+        this.estado = estado;
+        String mensaje = "El estado del evento '" + nombre + "' ha cambiado a: " + estado;
+        GestorNotificaciones.agregar(mensaje);
+        notificarMensaje(mensaje, this);
     }
 
-    aforoDisponible -= cantidad;
-
-    String mensaje = "El aforo del evento '" + nombre + "' ha cambiado. Nuevo aforo: " + aforoDisponible;
-
-    // 🔥 Guardar notificación global
-    GestorNotificaciones.agregar(mensaje);
-
-    // 🔔 Notificar a observadores
-    notificarMensaje(mensaje, this);
-}
-
+    public void reducirAforo(int cantidad) {
+        if (cantidad <= 0 || aforoDisponible < cantidad) {
+            throw new IllegalArgumentException("No hay aforo suficiente.");
+        }
+        aforoDisponible -= cantidad;
+        String mensaje = "El aforo del evento '" + nombre + "' ha cambiado. Nuevo aforo: " + aforoDisponible;
+        // Notificar a observadores
+        notificarMensaje(mensaje, this);
+    }
 
     @Override
     public void mostrarInformacion() {
-        System.out.println(getNombre() + " - " + getFechaHora() + " - " + getLugar());
+        System.out.println(getNombre() + " (" + estado + ") - " + getFechaHora());
     }
 }
-

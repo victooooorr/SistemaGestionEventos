@@ -1,0 +1,16 @@
+===== TICKET =====
+Fecha de compra: 2026-01-04T13:24:29.480988
+
+Cliente:
+Nombre: Ana López
+Correo: ana@test.com
+
+Evento:
+Código: EV001
+Nombre: Rock Night
+Fecha: 2026-01-14T13:23:51.025013
+Lugar: Madrid Arena
+
+Cantidad: 10
+Precio total: 250.0 €
+==========================

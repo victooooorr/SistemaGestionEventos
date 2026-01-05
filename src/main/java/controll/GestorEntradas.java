@@ -15,10 +15,7 @@ import java.util.UUID;
 public class GestorEntradas {
 
     public Venta comprar(Evento evento, Cliente cliente, int cantidad, Entrada entrada, ContextoPago pago) {
-        System.out.println("DEBUG cliente en compra = " + cliente);
-        System.out.println("DEBUG evento en compra = " + evento);
-        System.out.println("DEBUG cantidad = " + cantidad);
-    
+
         if (evento == null) throw new EventoNoEncontradoException("null");
 
         if (evento.getAforoDisponible() < cantidad) {
@@ -28,16 +25,24 @@ public class GestorEntradas {
         double precioUnitario = (entrada != null ? entrada.getPrecio() : new EntradaBasica(evento).getPrecio());
         double total = precioUnitario * cantidad;
 
+        // 1. Ejecutar pago
         pago.ejecutarPago(total);
 
+        // 2. Reducir aforo
         evento.reducirAforo(cantidad);
 
+        // 3. Crear el objeto Venta
         Venta venta = new Venta(UUID.randomUUID().toString(), cliente, evento, cantidad, total);
+        
+        // 4. Registrar en el Catálogo (Histórico general)
         CatalogoEventos.getInstancia().registrarVenta(venta);
         
+        // 🔥 5. REGISTRAR EN GESTOR DE VENTAS (¡IMPORTANTE PARA EL ADMIN!)
+        GestorVentas.getInstancia().agregarVenta(venta);
+        
+        // 6. Generar el archivo físico del ticket
         Ticket.generar(venta);
 
         return venta;
     }
 }
-

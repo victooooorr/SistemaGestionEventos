@@ -2,14 +2,10 @@ package vista;
 
 import controll.CatalogoEventos;
 import modelo.eventos.Evento;
-import modelo.eventos.builder.ConciertoBuilder;
-import modelo.eventos.builder.ConferenciaBuilder;
-import modelo.eventos.builder.EventoBuilder;
-import modelo.eventos.builder.FestivalAdapterBuilder;
-import modelo.eventos.builder.TeatroBuilder;
-
+import modelo.eventos.builder.*;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -19,162 +15,138 @@ public class VentanaCrearEvento extends JFrame {
     private final VentanaAdministrador padre;
 
     private JComboBox<String> comboTipo;
-    private JTextField txtCodigo;
-    private JTextField txtNombre;
-    private JTextField txtFecha;
-    private JTextField txtLugar;
-    private JTextField txtPrecio;
-    private JTextField txtAforo;
-    private JTextField txtUrl;
+    private JTextField txtCodigo, txtNombre, txtFecha, txtLugar, txtPrecio, txtAforo, txtUrl;
+    private JLabel lblRutaImagen;
+    private String rutaImagenSeleccionada = "imagenes/default.png"; // Valor por defecto
 
     public VentanaCrearEvento(VentanaAdministrador padre, CatalogoEventos catalogo) {
         this.catalogo = catalogo;
         this.padre = padre;
-
-        setTitle("Crear nuevo evento");
-        setSize(400, 450);
+        setTitle("Nuevo Evento");
+        setSize(500, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        Estilos.aplicarEstiloVentana(this);
 
         initComponents();
     }
 
     private void initComponents() {
+        setLayout(new BorderLayout());
+        add(Estilos.crearTitulo("Registrar Evento"), BorderLayout.NORTH);
 
-        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        JPanel panelForm = new JPanel(new GridLayout(0, 2, 10, 10));
+        panelForm.setBackground(Estilos.COLOR_FONDO);
+        panelForm.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        panel.add(new JLabel("Código:"));
-        txtCodigo = new JTextField();
-        panel.add(txtCodigo);
+        // Campos básicos
+        agregarCampo(panelForm, "Tipo Evento:", comboTipo = new JComboBox<>(new String[]{"Concierto", "Conferencia", "Teatro", "Festival"}));
+        agregarCampo(panelForm, "Código:", txtCodigo = new JTextField());
+        agregarCampo(panelForm, "Nombre:", txtNombre = new JTextField());
+        agregarCampo(panelForm, "Fecha (yyyy-MM-dd HH:mm):", txtFecha = new JTextField());
+        agregarCampo(panelForm, "Lugar:", txtLugar = new JTextField());
+        agregarCampo(panelForm, "Precio Base (€):", txtPrecio = new JTextField());
+        agregarCampo(panelForm, "Aforo Máximo:", txtAforo = new JTextField());
+        agregarCampo(panelForm, "URL Info:", txtUrl = new JTextField());
 
-        panel.add(new JLabel("Nombre:"));
-        txtNombre = new JTextField();
-        panel.add(txtNombre);
+        // Selector de Imagen
+        panelForm.add(new JLabel("Imagen Cartel:"));
+        JPanel panelImg = new JPanel(new BorderLayout());
+        panelImg.setBackground(Estilos.COLOR_FONDO);
+        
+        JButton btnImagen = new JButton("Seleccionar...");
+        lblRutaImagen = new JLabel("Defecto", SwingConstants.CENTER);
+        
+        btnImagen.addActionListener(e -> seleccionarImagen());
+        
+        panelImg.add(lblRutaImagen, BorderLayout.CENTER);
+        panelImg.add(btnImagen, BorderLayout.EAST);
+        panelForm.add(panelImg);
 
-        panel.add(new JLabel("Fecha (yyyy-MM-dd HH:mm):"));
-        txtFecha = new JTextField();
-        panel.add(txtFecha);
+        add(panelForm, BorderLayout.CENTER);
 
-        panel.add(new JLabel("Lugar:"));
-        txtLugar = new JTextField();
-        panel.add(txtLugar);
-
-        panel.add(new JLabel("Precio base:"));
-        txtPrecio = new JTextField();
-        panel.add(txtPrecio);
-
-        panel.add(new JLabel("Aforo máximo:"));
-        txtAforo = new JTextField();
-        panel.add(txtAforo);
-
-        panel.add(new JLabel("URL info:"));
-        txtUrl = new JTextField();
-        panel.add(txtUrl);
-
-        panel.add(new JLabel("Tipo de evento:"));
-        comboTipo = new JComboBox<>(new String[]{"Concierto", "Conferencia", "Festival", "Teatro"});
-        panel.add(comboTipo);
-
-        JButton btnCrear = new JButton("Crear");
-        btnCrear.addActionListener(e -> crearEvento());
-
-        JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.addActionListener(e -> dispose());
-
+        // Botones Acción
         JPanel panelBotones = new JPanel();
-        panelBotones.add(btnCrear);
+        panelBotones.setBackground(Estilos.COLOR_FONDO);
+        panelBotones.setBorder(BorderFactory.createEmptyBorder(10,0,20,0));
+        
+        JButton btnGuardar = Estilos.crearBoton("Guardar Evento", Estilos.COLOR_PRIMARIO);
+        JButton btnCancelar = Estilos.crearBoton("Cancelar", Color.GRAY);
+        
+        btnGuardar.addActionListener(e -> guardar());
+        btnCancelar.addActionListener(e -> dispose());
+        
+        panelBotones.add(btnGuardar);
         panelBotones.add(btnCancelar);
-
-        add(panel, BorderLayout.CENTER);
         add(panelBotones, BorderLayout.SOUTH);
     }
 
-    private void crearEvento() {
-    try {
-        String codigo = txtCodigo.getText().trim();
-        String nombre = txtNombre.getText().trim();
-        String fechaStr = txtFecha.getText().trim();
-        String lugar = txtLugar.getText().trim();
-        double precio = Double.parseDouble(txtPrecio.getText().trim());
-        int aforo = Integer.parseInt(txtAforo.getText().trim());
-        String url = txtUrl.getText().trim();
+    private void agregarCampo(JPanel panel, String label, JComponent comp) {
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(Estilos.FONT_BOLD);
+        panel.add(lbl);
+        panel.add(comp);
+    }
 
-        if (codigo.isEmpty() || nombre.isEmpty() || fechaStr.isEmpty() || lugar.isEmpty() || url.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Todos los campos deben estar completos.");
-            return;
+    private void seleccionarImagen() {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            rutaImagenSeleccionada = selectedFile.getAbsolutePath();
+            lblRutaImagen.setText(selectedFile.getName());
         }
+    }
 
-        LocalDateTime fecha = LocalDateTime.parse(
-                fechaStr,
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-        );
+    private void guardar() {
+        try {
+            // Recoger datos básicos
+            String codigo = txtCodigo.getText();
+            String nombre = txtNombre.getText();
+            LocalDateTime fecha = LocalDateTime.parse(txtFecha.getText(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            String lugar = txtLugar.getText();
+            double precio = Double.parseDouble(txtPrecio.getText());
+            int aforo = Integer.parseInt(txtAforo.getText());
+            String url = txtUrl.getText();
+            String tipo = (String) comboTipo.getSelectedItem();
 
-        String tipo = (String) comboTipo.getSelectedItem();
+            // Construcción del evento
+            EventoBuilder builder;
+            switch (tipo) {
+                case "Concierto" -> builder = new ConciertoBuilder();
+                case "Conferencia" -> builder = new ConferenciaBuilder();
+                case "Teatro" -> builder = new TeatroBuilder();
+                case "Festival" -> {
+                    // Caso especial Festival
+                    FestivalAdapterBuilder fb = new FestivalAdapterBuilder();
+                    fb.conCodigo(codigo).conNombre(nombre).conFecha(fecha).conLugar(lugar)
+                      .conPrecio(precio).conAforo(aforo).conUrl(url);
+                    Evento f = fb.build();
+                    f.setRutaImagen(rutaImagenSeleccionada);
+                    catalogo.agregarEvento(f);
+                    
+                    new VentanaSubeventosFestival(fb, catalogo, padre).setVisible(true);
+                    dispose();
+                    return;
+                }
+                default -> throw new IllegalStateException("Tipo no válido");
+            }
 
-        // 🔥 CASO ESPECIAL: FESTIVAL
-        if ("Festival".equals(tipo)) {
+            Evento nuevo = builder
+                    .conCodigo(codigo).conNombre(nombre).conFecha(fecha)
+                    .conLugar(lugar).conPrecio(precio).conAforo(aforo).conUrl(url)
+                    .build();
+            
+            // ASIGNAR IMAGEN
+            nuevo.setRutaImagen(rutaImagenSeleccionada);
 
-            FestivalAdapterBuilder festivalBuilder = (FestivalAdapterBuilder) new FestivalAdapterBuilder()
-                    .conCodigo(codigo)
-                    .conNombre(nombre)
-                    .conFecha(fecha)
-                    .conLugar(lugar)
-                    .conPrecio(precio)
-                    .conAforo(aforo)
-                    .conUrl(url);
-
-            // Abrimos la ventana de subeventos
-            new VentanaSubeventosFestival(festivalBuilder, catalogo, padre).setVisible(true);
-
+            catalogo.agregarEvento(nuevo);
+            JOptionPane.showMessageDialog(this, "Evento creado correctamente.");
+            padre.cargarEventos();
             dispose();
-            return;
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error en los datos: " + ex.getMessage());
         }
-
-        // 🔥 RESTO DE EVENTOS: usan EventoBuilder normal
-        EventoBuilder builder;
-
-        switch (tipo) {
-            case "Concierto":
-                builder = new ConciertoBuilder();
-                break;
-
-            case "Conferencia":
-                builder = new ConferenciaBuilder();
-                break;
-
-            case "Teatro":
-                builder = new TeatroBuilder();
-                break;
-
-            default:
-                throw new IllegalStateException("Tipo de evento no soportado.");
-        }
-
-        Evento nuevo = builder
-                .conCodigo(codigo)
-                .conNombre(nombre)
-                .conFecha(fecha)
-                .conLugar(lugar)
-                .conPrecio(precio)
-                .conAforo(aforo)
-                .conUrl(url)
-                .build();
-
-        catalogo.agregarEvento(nuevo);
-
-        JOptionPane.showMessageDialog(this, "Evento creado correctamente.");
-
-        padre.cargarEventos();
-        dispose();
-
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Error al crear evento: " + ex.getMessage());
     }
 }
-
-}
-
-
-
-
