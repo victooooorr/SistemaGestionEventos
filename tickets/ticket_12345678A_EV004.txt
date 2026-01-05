@@ -1,5 +1,5 @@
 ===== TICKET =====
-Fecha de compra: 2025-12-27T17:21:30.297599300
+Fecha de compra: 2025-12-30T15:06:39.791025600
 
 Cliente:
 Nombre: Ana López
@@ -8,9 +8,9 @@ Correo: ana
 Evento:
 Código: EV004
 Nombre: Summer Fest
-Fecha: 2026-01-26T17:21:17.265020400
+Fecha: 2026-01-29T15:06:05.148186800
 Lugar: Parque del Sol
 
-Cantidad: 1
-Precio total: 40.0 €
+Cantidad: 4
+Precio total: 280.0 €
 ==========================

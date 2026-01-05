@@ -17,14 +17,12 @@ public class VentanaCrearSubevento extends JFrame {
     private JTextField txtNombre;
     private JTextField txtFecha;
     private JTextField txtLugar;
-    private JTextField txtPrecio;
-    private JTextField txtAforo;
 
     public VentanaCrearSubevento(VentanaSubeventosFestival padre) {
         this.padre = padre;
 
         setTitle("Crear subevento");
-        setSize(350, 350);
+        setSize(350, 300);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -47,14 +45,6 @@ public class VentanaCrearSubevento extends JFrame {
         panel.add(new JLabel("Lugar:"));
         txtLugar = new JTextField();
         panel.add(txtLugar);
-
-        panel.add(new JLabel("Precio:"));
-        txtPrecio = new JTextField();
-        panel.add(txtPrecio);
-
-        panel.add(new JLabel("Aforo:"));
-        txtAforo = new JTextField();
-        panel.add(txtAforo);
 
         panel.add(new JLabel("Tipo:"));
         comboTipo = new JComboBox<>(new String[]{"Concierto", "Conferencia", "Teatro"});
@@ -79,8 +69,11 @@ public class VentanaCrearSubevento extends JFrame {
             String nombre = txtNombre.getText().trim();
             String fechaStr = txtFecha.getText().trim();
             String lugar = txtLugar.getText().trim();
-            double precio = Double.parseDouble(txtPrecio.getText().trim());
-            int aforo = Integer.parseInt(txtAforo.getText().trim());
+
+            if (nombre.isEmpty() || fechaStr.isEmpty() || lugar.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Todos los campos deben estar completos.");
+                return;
+            }
 
             LocalDateTime fecha = LocalDateTime.parse(
                     fechaStr,
@@ -113,8 +106,8 @@ public class VentanaCrearSubevento extends JFrame {
                     .conNombre(nombre)
                     .conFecha(fecha)
                     .conLugar(lugar)
-                    .conPrecio(precio)
-                    .conAforo(aforo)
+                    .conPrecio(0) // 🔥 Precio heredado del Festival
+                    .conAforo(0)  // 🔥 Aforo heredado del Festival
                     .conUrl("N/A")
                     .build();
 
@@ -127,3 +120,4 @@ public class VentanaCrearSubevento extends JFrame {
         }
     }
 }
+
