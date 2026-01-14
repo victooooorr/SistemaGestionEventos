@@ -38,15 +38,18 @@ public class VentanaCliente extends JFrame implements Observador {
     private JTextField txtFiltroFecha;
     private JCheckBox chkNotificaciones;
     private JTextArea areaNotificaciones;
+    
+    // --- NUEVO: Visor de Imagen ---
+    private JLabel lblImagenPreview;
 
     public VentanaCliente(Cliente cliente) {
         this.cliente = cliente;
         this.catalogo = CatalogoEventos.getInstancia();
         setTitle("Portal de Eventos - Hola " + cliente.getNombre());
-        setSize(1200, 750);
+        setSize(1200, 800); // Un poco más alto
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Estilos.aplicarEstiloVentana(this); // Aplicar fondo gris claro
+        Estilos.aplicarEstiloVentana(this);
 
         initComponents();
     }
@@ -105,7 +108,7 @@ public class VentanaCliente extends JFrame implements Observador {
         panelFiltros.add(txtFiltroFecha);
 
         JButton btnBuscar = Estilos.crearBoton("Filtrar", Estilos.COLOR_SECUNDARIO);
-        btnBuscar.setPreferredSize(new Dimension(100, 30)); // Botón más compacto
+        btnBuscar.setPreferredSize(new Dimension(100, 30)); 
         btnBuscar.addActionListener(e -> filtrarEventos());
         panelFiltros.add(btnBuscar);
         
@@ -128,11 +131,18 @@ public class VentanaCliente extends JFrame implements Observador {
         tablaEventos = new JTable(modeloTabla);
         Estilos.estilizarTabla(tablaEventos);
         
+        // Listener selección tabla para cambiar la foto
+        tablaEventos.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                actualizarFotoSeleccionada();
+            }
+        });
+        
         JScrollPane scrollTabla = new JScrollPane(tablaEventos);
         scrollTabla.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
         add(scrollTabla, BorderLayout.CENTER);
 
-        // --- 3. PANEL LATERAL (COMPRA) ---
+        // --- 3. PANEL LATERAL (COMPRA E IMAGEN) ---
         JPanel panelLateral = new JPanel();
         panelLateral.setLayout(new BoxLayout(panelLateral, BoxLayout.Y_AXIS));
         panelLateral.setBackground(Color.WHITE);
@@ -140,7 +150,19 @@ public class VentanaCliente extends JFrame implements Observador {
                 BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY),
                 BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
-        panelLateral.setPreferredSize(new Dimension(280, 0));
+        panelLateral.setPreferredSize(new Dimension(300, 0)); // Un poco más ancho para la foto
+
+        // 3.1 VISOR DE IMAGEN
+        lblImagenPreview = new JLabel();
+        lblImagenPreview.setPreferredSize(new Dimension(260, 180));
+        lblImagenPreview.setMaximumSize(new Dimension(260, 180));
+        lblImagenPreview.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        lblImagenPreview.setHorizontalAlignment(SwingConstants.CENTER);
+        lblImagenPreview.setText("Selecciona un evento");
+        lblImagenPreview.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        panelLateral.add(lblImagenPreview);
+        panelLateral.add(Box.createVerticalStrut(20));
 
         JLabel lblCompra = new JLabel("Panel de Compra");
         lblCompra.setFont(Estilos.FONT_SUBTITULO);
@@ -243,6 +265,41 @@ public class VentanaCliente extends JFrame implements Observador {
                     e.getCodigo(), e.getNombre(), e.getEstado(), e.getFechaHora(),
                     e.getLugar(), e.getPrecioBase(), e.getAforoDisponible()
             });
+        }
+    }
+
+    // --- LÓGICA DE CARGA DE IMAGEN (IDÉNTICA A LA DE ADMIN) ---
+    private void actualizarFotoSeleccionada() {
+        int fila = tablaEventos.getSelectedRow();
+        if (fila == -1) return;
+        
+        String codigo = (String) modeloTabla.getValueAt(fila, 0);
+        Evento evento = catalogo.buscarEvento(codigo);
+        String ruta = evento.getRutaImagen();
+        
+        ImageIcon icono = null;
+        try {
+            if (ruta != null && (ruta.startsWith("http://") || ruta.startsWith("https://"))) {
+                icono = new ImageIcon(new java.net.URL(ruta));
+            } else if (ruta != null && !ruta.isEmpty()) {
+                icono = new ImageIcon(ruta);
+                if (icono.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                     java.net.URL resourceUrl = getClass().getResource(ruta);
+                     if (resourceUrl != null) icono = new ImageIcon(resourceUrl);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error img: " + e.getMessage());
+        }
+
+        if (icono != null && icono.getImageLoadStatus() == MediaTracker.COMPLETE) {
+            Image img = icono.getImage();
+            Image newImg = img.getScaledInstance(260, 180, Image.SCALE_SMOOTH);
+            lblImagenPreview.setText("");
+            lblImagenPreview.setIcon(new ImageIcon(newImg));
+        } else {
+            lblImagenPreview.setIcon(null);
+            lblImagenPreview.setText("Sin imagen");
         }
     }
 

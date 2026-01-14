@@ -1,4 +1,5 @@
 package modelo.eventos;
+
 import control.observer.SujetoEventos;
 import controll.GestorNotificaciones;
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
     protected double precioBase;
     protected String urlInfo;
     
+    // Campo para la imagen
     protected String rutaImagen; 
     protected EstadoEvento estado;
 
@@ -31,14 +33,14 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
         this.precioBase = precioBase;
         this.urlInfo = urlInfo;
         
-        // Valores por defecto
+        // Valor por defecto si no se especifica imagen
         this.rutaImagen = "/imagenes/default.png"; 
         this.estado = EstadoEvento.ACTIVO;
     }
 
     public abstract Evento clonarConNuevosDatos(String nombre, LocalDateTime fecha, String lugar, double precio, int aforo);
 
-    // Getters existentes...
+    // Getters existentes
     public String getCodigo() { return codigo; }
     public String getNombre() { return nombre; }
     public String getTipo() { return tipo; }
@@ -48,7 +50,7 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
     public double getPrecioBase() { return precioBase; }
     public String getUrlInfo(){ return urlInfo; }
 
-    // --- NUEVOS GETTERS Y SETTERS ---
+    // --- GETTERS Y SETTERS DE IMAGEN ---
     public String getRutaImagen() { return rutaImagen; }
     public void setRutaImagen(String rutaImagen) { this.rutaImagen = rutaImagen; }
 
@@ -67,7 +69,6 @@ public abstract class Evento extends SujetoEventos implements ComponenteEvento {
         }
         aforoDisponible -= cantidad;
         String mensaje = "El aforo del evento '" + nombre + "' ha cambiado. Nuevo aforo: " + aforoDisponible;
-        // Notificar a observadores
         notificarMensaje(mensaje, this);
     }
 

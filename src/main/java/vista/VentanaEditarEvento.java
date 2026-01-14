@@ -4,10 +4,10 @@ import control.command.Invocador;
 import control.command.ModificarEventoCommand;
 import controll.CatalogoEventos;
 import modelo.eventos.Evento;
-import modelo.eventos.EstadoEvento;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -19,15 +19,21 @@ public class VentanaEditarEvento extends JFrame {
     private final VentanaAdministrador ventanaPadre;
 
     private JTextField txtNombre, txtFecha, txtLugar, txtPrecio, txtAforo;
+    // --- NUEVOS COMPONENTES IMAGEN ---
+    private JLabel lblRutaImagen;
+    private String rutaImagenActual;
 
     public VentanaEditarEvento(VentanaAdministrador padre, Evento original, Invocador invocador, CatalogoEventos catalogo) {
         this.original = original;
         this.invocador = invocador;
         this.catalogo = catalogo;
         this.ventanaPadre = padre;
+        
+        // Inicializamos la ruta con la que ya tenga el evento
+        this.rutaImagenActual = original.getRutaImagen();
 
         setTitle("Editar: " + original.getNombre());
-        setSize(450, 450);
+        setSize(500, 550); // Un poco más alto para el selector de imagen
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Estilos.aplicarEstiloVentana(this);
@@ -48,6 +54,21 @@ public class VentanaEditarEvento extends JFrame {
         agregarCampo(panelForm, "Lugar:", txtLugar = new JTextField(original.getLugar()));
         agregarCampo(panelForm, "Precio Base:", txtPrecio = new JTextField(String.valueOf(original.getPrecioBase())));
         agregarCampo(panelForm, "Aforo Disponible:", txtAforo = new JTextField(String.valueOf(original.getAforoDisponible())));
+
+        // --- SELECTOR DE IMAGEN EN EDICIÓN ---
+        panelForm.add(new JLabel("Imagen Cartel:"));
+        JPanel panelImg = new JPanel(new BorderLayout(5, 0));
+        panelImg.setBackground(Estilos.COLOR_FONDO);
+        
+        JButton btnCambiarImg = new JButton("Cambiar...");
+        lblRutaImagen = new JLabel(obtenerNombreArchivo(rutaImagenActual), SwingConstants.CENTER);
+        
+        btnCambiarImg.addActionListener(e -> seleccionarNuevaImagen());
+        
+        panelImg.add(lblRutaImagen, BorderLayout.CENTER);
+        panelImg.add(btnCambiarImg, BorderLayout.EAST);
+        panelForm.add(panelImg);
+        // -------------------------------------
 
         add(panelForm, BorderLayout.CENTER);
 
@@ -73,6 +94,23 @@ public class VentanaEditarEvento extends JFrame {
         panel.add(lbl);
         panel.add(campo);
     }
+    
+    // Método auxiliar para mostrar solo el nombre del archivo y no toda la ruta larga
+    private String obtenerNombreArchivo(String ruta) {
+        if (ruta == null || ruta.isEmpty()) return "Sin imagen";
+        File f = new File(ruta);
+        return f.getName();
+    }
+
+    private void seleccionarNuevaImagen() {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            rutaImagenActual = selectedFile.getAbsolutePath();
+            lblRutaImagen.setText(selectedFile.getName());
+        }
+    }
 
     private void guardarCambios() {
         try {
@@ -83,15 +121,17 @@ public class VentanaEditarEvento extends JFrame {
             int aforo = Integer.parseInt(txtAforo.getText().trim());
 
             Evento modificado = original.clonarConNuevosDatos(nombre, fecha, lugar, precio, aforo);
-            // Mantenemos el estado e imagen originales para no perderlos
+            
+            // Mantenemos el estado original
             modificado.setEstado(original.getEstado());
-            modificado.setRutaImagen(original.getRutaImagen());
+            // Guardamos la NUEVA ruta de imagen (o la que ya tenía si no se cambió)
+            modificado.setRutaImagen(rutaImagenActual);
 
             invocador.añadir(new ModificarEventoCommand(catalogo, original, modificado));
             invocador.ejecutarTodos();
 
             JOptionPane.showMessageDialog(this, "Evento modificado correctamente.");
-            ventanaPadre.cargarEventos();
+            ventanaPadre.cargarEventos(); // Esto refrescará la tabla y la foto en el admin
             dispose();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al modificar: " + ex.getMessage());

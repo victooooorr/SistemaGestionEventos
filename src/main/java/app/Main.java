@@ -48,14 +48,17 @@ public class Main {
         // ---------------------------------------------------------
         
         Evento concierto = new Concierto("EV001", "Rock Night", LocalDateTime.now().plusDays(10), "Madrid Arena", 100, 25.0, "https://rock.com", "Rock", "The Flames", 120);
-        concierto.setRutaImagen("imagenes/default.png"); 
+        concierto.setRutaImagen("/imagenes/rock_nights.png"); 
         
         Evento teatro = new Teatro("EV002", "Hamlet", LocalDateTime.now().plusDays(5), "Teatro Real", 80, 30.0, "https://teatro.com", "Cía Nacional", 150);
+        teatro.setRutaImagen("/imagenes/hamlet.jpg");
         Evento conferencia = new Conferencia("EV003", "IA en 2026", LocalDateTime.now().plusDays(20), "IFEMA", 200, 15.0, "https://ia.com", "Dra. García", "IA", 90);
+        conferencia.setRutaImagen("/imagenes/evento_ia.png");
 
         Festival festival = new Festival("EV004", "Summer Fest", LocalDateTime.now().plusDays(30), "Parque Sol", 300, 40.0, "https://fest.com");
         festival.agregarSubevento(new HorarioFestival("Día 1", "18:00 - 02:00"));
         festival.agregarSubevento(new HorarioFestival("Día 2", "17:00 - 03:00"));
+        festival.setRutaImagen("/imagenes/summer_fest.png");
 
         catalogo.agregarEvento(concierto);
         catalogo.agregarEvento(teatro);

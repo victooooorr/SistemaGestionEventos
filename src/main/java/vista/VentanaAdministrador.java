@@ -24,12 +24,15 @@ public class VentanaAdministrador extends JFrame implements Observador {
     private DefaultTableModel modeloTabla;
     private JTextArea areaNotificaciones;
 
+    // --- NUEVO: Componente para mostrar la imagen ---
+    private JLabel lblImagenPreview;
+
     public VentanaAdministrador(Administrador admin) {
         this.admin = admin;
         this.catalogo = CatalogoEventos.getInstancia();
         
         setTitle("Panel de Control - " + admin.getNombre());
-        setSize(1100, 700);
+        setSize(1100, 750); // Un poco más alto para que quepa bien la foto
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Estilos.aplicarEstiloVentana(this);
@@ -76,31 +79,49 @@ public class VentanaAdministrador extends JFrame implements Observador {
         tablaEventos = new JTable(modeloTabla);
         Estilos.estilizarTabla(tablaEventos);
         
+        // --- NUEVO: Listener para detectar click en la tabla ---
+        tablaEventos.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                actualizarFotoSeleccionada();
+            }
+        });
+        
         JScrollPane scrollTabla = new JScrollPane(tablaEventos);
         scrollTabla.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
         scrollTabla.getViewport().setBackground(Color.WHITE);
         
         add(scrollTabla, BorderLayout.CENTER);
 
-        // --- BARRA LATERAL (BOTONES) ---
+        // --- BARRA LATERAL (BOTONES E IMAGEN) ---
         JPanel panelLateral = new JPanel();
         panelLateral.setLayout(new BoxLayout(panelLateral, BoxLayout.Y_AXIS));
         panelLateral.setBackground(Estilos.COLOR_FONDO);
-        panelLateral.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 20));
+        panelLateral.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 20));
 
-        // Botones de Gestión
+        // 1. VISOR DE IMAGEN
+        lblImagenPreview = new JLabel();
+        lblImagenPreview.setPreferredSize(new Dimension(260, 180));
+        lblImagenPreview.setMaximumSize(new Dimension(260, 180));
+        lblImagenPreview.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        lblImagenPreview.setHorizontalAlignment(SwingConstants.CENTER);
+        lblImagenPreview.setText("Selecciona un evento");
+        lblImagenPreview.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        panelLateral.add(lblImagenPreview);
+        panelLateral.add(Box.createRigidArea(new Dimension(0, 20))); // Espacio
+
+        // 2. BOTONES
         JButton btnCrear = Estilos.crearBoton("➕ Nuevo Evento", Estilos.COLOR_PRIMARIO);
         JButton btnEditar = Estilos.crearBoton("✏️ Editar", Estilos.COLOR_SECUNDARIO);
         JButton btnEstado = Estilos.crearBoton("🔄 Cambiar Estado", Color.ORANGE);
         JButton btnEliminar = Estilos.crearBoton("🗑️ Eliminar", Estilos.COLOR_PELIGRO);
         
         JSeparator sep = new JSeparator();
-        sep.setMaximumSize(new Dimension(260, 10)); // Ajustado ancho
+        sep.setMaximumSize(new Dimension(260, 10));
 
         JButton btnVentasEvento = Estilos.crearBoton("🎟️ Ventas Evento", new Color(0, 153, 153));
         JButton btnVentasGlobal = Estilos.crearBoton("💰 Ventas Totales", new Color(46, 204, 113));
 
-        // 🔥 CAMBIO CLAVE: Aumentamos el ancho máximo a 260px 🔥
         Dimension btnSize = new Dimension(260, 45); 
         
         for (JComponent c : new JComponent[]{btnCrear, btnEditar, btnEstado, btnEliminar, sep, btnVentasEvento, btnVentasGlobal}) {
@@ -110,7 +131,7 @@ public class VentanaAdministrador extends JFrame implements Observador {
             panelLateral.add(Box.createRigidArea(new Dimension(0, 15)));
         }
 
-        // Listeners
+        // Listeners Botones
         btnCrear.addActionListener(e -> new VentanaCrearEvento(this, catalogo).setVisible(true));
         btnEditar.addActionListener(e -> modificarEvento());
         btnEstado.addActionListener(e -> cambiarEstado());
@@ -142,14 +163,63 @@ public class VentanaAdministrador extends JFrame implements Observador {
         }
     }
 
+    // --- MÉTODOS AUXILIARES ---
+
     private String obtenerCodigoSeleccionado() {
-        int fila = tablaEventos.getSelectedRow();
-        if (fila == -1) {
+        String codigo = obtenerCodigoSeleccionadoSinAviso();
+        if (codigo == null) {
             JOptionPane.showMessageDialog(this, "Selecciona un evento de la lista.");
-            return null;
         }
+        return codigo;
+    }
+
+    // Método silencioso para el listener de la tabla (no muestra popup)
+    private String obtenerCodigoSeleccionadoSinAviso() {
+        int fila = tablaEventos.getSelectedRow();
+        if (fila == -1) return null;
         return (String) modeloTabla.getValueAt(fila, 0);
     }
+
+    // --- NUEVO: Lógica para cargar y mostrar la imagen ---
+    private void actualizarFotoSeleccionada() {
+        String codigo = obtenerCodigoSeleccionadoSinAviso();
+        if (codigo != null) {
+            Evento evento = catalogo.buscarEvento(codigo);
+            String ruta = evento.getRutaImagen();
+            
+            ImageIcon icono = null;
+            try {
+                // Opción A: Es URL Web
+                if (ruta != null && (ruta.startsWith("http://") || ruta.startsWith("https://"))) {
+                    icono = new ImageIcon(new java.net.URL(ruta));
+                } 
+                // Opción B: Es archivo local
+                else if (ruta != null && !ruta.isEmpty()) {
+                    icono = new ImageIcon(ruta);
+                    // Si falla carga local, intentar como recurso del proyecto
+                    if (icono.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                         java.net.URL resourceUrl = getClass().getResource(ruta);
+                         if (resourceUrl != null) icono = new ImageIcon(resourceUrl);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error cargando imagen: " + e.getMessage());
+            }
+
+            // Redimensionar y mostrar
+            if (icono != null && icono.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                Image img = icono.getImage();
+                Image newImg = img.getScaledInstance(260, 180, Image.SCALE_SMOOTH);
+                lblImagenPreview.setText("");
+                lblImagenPreview.setIcon(new ImageIcon(newImg));
+            } else {
+                lblImagenPreview.setIcon(null);
+                lblImagenPreview.setText("Sin imagen");
+            }
+        }
+    }
+    
+    // --- MÉTODOS DE ACCIÓN ---
     
     private void verVentasDeEvento() {
         String codigo = obtenerCodigoSeleccionado();
@@ -167,6 +237,9 @@ public class VentanaAdministrador extends JFrame implements Observador {
                 invocador.añadir(new EliminarEventoCommand(catalogo, codigo));
                 invocador.ejecutarTodos();
                 cargarEventos();
+                // Limpiar la foto al eliminar
+                lblImagenPreview.setIcon(null);
+                lblImagenPreview.setText("Selecciona un evento");
             }
         }
     }
@@ -188,6 +261,7 @@ public class VentanaAdministrador extends JFrame implements Observador {
     private void modificarEvento() {
         String codigo = obtenerCodigoSeleccionado();
         if (codigo != null) {
+            // Nota: Al volver de editar, la foto se actualizará si recargas la tabla
             new VentanaEditarEvento(this, catalogo.buscarEvento(codigo), invocador, catalogo).setVisible(true);
         }
     }
