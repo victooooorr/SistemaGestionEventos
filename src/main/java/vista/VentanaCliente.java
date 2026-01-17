@@ -328,12 +328,36 @@ public class VentanaCliente extends JFrame implements Observador {
                 }
             }
 
-            ContextoPago pago = new ContextoPago();
+         ContextoPago pago = new ContextoPago();
+
             switch (metodo) {
-                case "Tarjeta" -> pago.setEstrategia(new PagoTarjeta());
-                case "Transferencia" -> pago.setEstrategia(new PagoTransferencia());
-                case "PayPal" -> pago.setEstrategia(new PagoPayPal());
+
+                case "Tarjeta" -> {
+                    pago.setEstrategia(new PagoTarjeta());
+                }
+
+                case "Transferencia" -> {
+                    double total = entrada.getPrecio() * cantidad;
+
+                    // Mostrar ventana profesional de transferencia
+                    new VentanaPagoTransferencia(this, total).setVisible(true);
+
+                    // Estrategia de pago por transferencia
+                    pago.setEstrategia(new PagoTransferencia());
+                }
+
+                case "PayPal" -> {
+                    double total = entrada.getPrecio() * cantidad; 
+                    VentanaPagoPayPal ventanaPayPal = new VentanaPagoPayPal(this, total); 
+                    ventanaPayPal.setVisible(true); 
+                    if (!ventanaPayPal.isPagoRealizado()) { 
+                        JOptionPane.showMessageDialog(this, "Pago cancelado."); 
+                        return; 
+                    } 
+                    pago.setEstrategia(new PagoPayPal());
+                }
             }
+
 
             new GestorEntradas().comprar(evento, cliente, cantidad, entrada, pago);
             JOptionPane.showMessageDialog(this, "¡Entrada comprada con éxito!");
