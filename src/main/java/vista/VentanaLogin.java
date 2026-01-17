@@ -20,7 +20,7 @@ public class VentanaLogin extends JFrame {
     public VentanaLogin(GestorUsuarios gestorUsuarios) {
         this.gestorUsuarios = gestorUsuarios;
         setTitle("Gestión de Eventos - Acceso");
-        setSize(400, 350);
+        setSize(400, 400); // Un poco más alto para que quepan bien los botones
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -59,14 +59,27 @@ public class VentanaLogin extends JFrame {
 
         add(panelForm, BorderLayout.CENTER);
 
-        // 3. BOTÓN
+        // 3. PANEL DE BOTONES (Login + Registro)
         JPanel panelBoton = new JPanel();
+        panelBoton.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10)); // Gap de 10px entre botones
         panelBoton.setBackground(Estilos.COLOR_FONDO);
         panelBoton.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
 
-        JButton loginButton = Estilos.crearBoton("Iniciar Sesión", true);
+        // Botón Iniciar Sesión (Primario)
+        JButton loginButton = Estilos.crearBoton("Iniciar Sesión", Estilos.COLOR_PRIMARIO);
         loginButton.addActionListener(e -> intentarLogin());
+        
+        // --- NUEVO: Botón Crear Cuenta (Secundario) ---
+        JButton registroButton = Estilos.crearBoton("Crear Cuenta", Estilos.COLOR_SECUNDARIO);
+        registroButton.addActionListener(e -> {
+            // Cerramos la ventana de login actual
+            this.dispose();
+            // Abrimos la ventana de registro pasando el mismo gestor
+            new VentanaRegistro(gestorUsuarios).setVisible(true);
+        });
+
         panelBoton.add(loginButton);
+        panelBoton.add(registroButton);
 
         add(panelBoton, BorderLayout.SOUTH);
     }
