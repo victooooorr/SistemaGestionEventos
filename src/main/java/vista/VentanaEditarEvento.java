@@ -10,6 +10,7 @@ import java.awt.*;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import modelo.eventos.Festival;
 
 public class VentanaEditarEvento extends JFrame {
 
@@ -69,6 +70,15 @@ public class VentanaEditarEvento extends JFrame {
         panelImg.add(btnCambiarImg, BorderLayout.EAST);
         panelForm.add(panelImg);
         // -------------------------------------
+        // --- BOTÓN PARA EDITAR SUBEVENTOS SI ES FESTIVAL ---
+        if (original instanceof Festival festival) {
+            JButton btnSubeventos = Estilos.crearBoton("Gestionar Subeventos", Estilos.COLOR_SECUNDARIO);
+            btnSubeventos.addActionListener(e -> {
+                new VentanaEditarSubeventosFestival(festival, catalogo, ventanaPadre).setVisible(true);
+            });
+            panelForm.add(new JLabel("Subeventos:"));
+            panelForm.add(btnSubeventos);
+        }
 
         add(panelForm, BorderLayout.CENTER);
 
