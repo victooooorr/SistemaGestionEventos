@@ -7,6 +7,7 @@ import modelo.eventos.builder.FestivalAdapterBuilder;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class VentanaSubeventosFestival extends JFrame {
         modeloLista = new DefaultListModel<>();
         JList<String> listaSubeventos = new JList<>(modeloLista);
         listaSubeventos.setFont(Estilos.FONT_NORMAL);
-        
+
         JScrollPane scroll = new JScrollPane(listaSubeventos);
         scroll.setBorder(BorderFactory.createTitledBorder("Agenda del Festival"));
         add(scroll, BorderLayout.CENTER);
@@ -51,12 +52,17 @@ public class VentanaSubeventosFestival extends JFrame {
         JButton btnGuardar = Estilos.crearBoton("💾 Finalizar Festival", Estilos.COLOR_PRIMARIO);
 
         btnAñadir.addActionListener(e -> new VentanaCrearSubevento(this).setVisible(true));
-        
+
         btnGuardar.addActionListener(e -> {
             try {
                 builder.conSubeventos(subeventos);
+
+                // Código único para evitar duplicados
+                builder.conCodigo("FEST-" + System.currentTimeMillis());
+
                 Evento festival = builder.build();
                 catalogo.agregarEvento(festival);
+
                 JOptionPane.showMessageDialog(this, "Festival creado con éxito.");
                 padre.cargarEventos();
                 dispose();
@@ -71,7 +77,15 @@ public class VentanaSubeventosFestival extends JFrame {
     }
 
     public void agregarSubevento(ComponenteEvento sub) {
-        subeventos.add(sub);
-        modeloLista.addElement(sub.getNombre());
-    }
+    subeventos.add(sub);
+
+    Evento ev = (Evento) sub; // Conversión segura
+
+    String info = ev.getNombre()
+            + " | " + ev.getTipo()
+            + " | " + ev.getFechaHora().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
+    modeloLista.addElement(info);
+}
+
 }

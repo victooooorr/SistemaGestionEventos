@@ -1,0 +1,16 @@
+===== TICKET =====
+Fecha de compra: 2026-01-17T17:24:21.434406
+
+Cliente:
+Nombre: Ana López
+Correo: ana@test.com
+
+Evento:
+Código: FEST-1768667036272
+Nombre: Fest
+Fecha: 2026-02-16T17:22
+Lugar: madrid
+
+Cantidad: 1
+Precio total: 132.0 €
+==========================

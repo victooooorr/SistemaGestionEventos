@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 
 public class VentanaCrearSubevento extends JFrame {
 
-    // Ahora acepta cualquier ventana como padre
     private final Object padre;
 
     private JComboBox<String> comboTipo;
@@ -88,7 +87,6 @@ public class VentanaCrearSubevento extends JFrame {
                     .conUrl("")
                     .build();
 
-            // Soporte para ambas ventanas
             if (padre instanceof VentanaSubeventosFestival v1) {
                 v1.agregarSubevento((ComponenteEvento) sub);
             } else if (padre instanceof VentanaEditarSubeventosFestival v2) {
