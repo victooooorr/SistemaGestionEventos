@@ -3,74 +3,114 @@ package vista;
 import modelo.eventos.ComponenteEvento;
 import modelo.eventos.Evento;
 import modelo.eventos.builder.*;
+import org.jdatepicker.impl.*;
+
 import javax.swing.*;
 import java.awt.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Properties;
 
-public class VentanaCrearSubevento extends JFrame {
+public class VentanaCrearSubevento extends JDialog {
 
     private final Object padre;
 
+    private JTextField txtNombre, txtLugar, txtPrecio, txtAforo;
     private JComboBox<String> comboTipo;
-    private JTextField txtNombre, txtFecha, txtLugar, txtPrecio, txtAforo;
+    private JDatePickerImpl datePicker;
+    private JSpinner spinnerHora;
 
     public VentanaCrearSubevento(Object padre) {
         this.padre = padre;
 
-        setTitle("Nueva Actividad");
-        setSize(400, 450);
+        setTitle("Nuevo Subevento");
+        setSize(450, 500);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
+        setModal(true);
         Estilos.aplicarEstiloVentana(this);
 
         initComponents();
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout());
-        add(Estilos.crearTitulo("Detalles del Subevento"), BorderLayout.NORTH);
 
         JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
-        panel.setBackground(Estilos.COLOR_FONDO);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(Estilos.COLOR_FONDO);
 
-        agregarCampo(panel, "Nombre:", txtNombre = new JTextField());
-        agregarCampo(panel, "Fecha (yyyy-MM-dd HH:mm):", txtFecha = new JTextField());
-        agregarCampo(panel, "Lugar:", txtLugar = new JTextField());
-        agregarCampo(panel, "Precio:", txtPrecio = new JTextField("0.0"));
-        agregarCampo(panel, "Aforo:", txtAforo = new JTextField("100"));
+        panel.add(new JLabel("Nombre:"));
+        txtNombre = new JTextField();
+        panel.add(txtNombre);
+
+        panel.add(new JLabel("Lugar:"));
+        txtLugar = new JTextField();
+        panel.add(txtLugar);
+
+        panel.add(new JLabel("Precio:"));
+        txtPrecio = new JTextField("0.0");
+        panel.add(txtPrecio);
+
+        panel.add(new JLabel("Aforo:"));
+        txtAforo = new JTextField("100");
+        panel.add(txtAforo);
 
         panel.add(new JLabel("Tipo:"));
         comboTipo = new JComboBox<>(new String[]{"Concierto", "Conferencia", "Teatro"});
         panel.add(comboTipo);
 
-        add(panel, BorderLayout.CENTER);
+        panel.add(new JLabel("Fecha:"));
+        datePicker = crearDatePicker();
+        panel.add(datePicker);
 
-        JPanel botones = new JPanel();
-        botones.setBackground(Estilos.COLOR_FONDO);
+        panel.add(new JLabel("Hora:"));
+        spinnerHora = crearSpinnerHora();
+        panel.add(spinnerHora);
+
+        add(panel, BorderLayout.CENTER);
 
         JButton btnOk = Estilos.crearBoton("Añadir", Estilos.COLOR_PRIMARIO);
         btnOk.addActionListener(e -> crear());
-
-        botones.add(btnOk);
-        add(botones, BorderLayout.SOUTH);
+        add(btnOk, BorderLayout.SOUTH);
     }
 
-    private void agregarCampo(JPanel p, String l, JTextField t) {
-        JLabel lbl = new JLabel(l);
-        lbl.setFont(Estilos.FONT_BOLD);
-        p.add(lbl);
-        p.add(t);
+    private JDatePickerImpl crearDatePicker() {
+        UtilDateModel model = new UtilDateModel();
+        Properties p = new Properties();
+        p.put("text.today", "Hoy");
+        p.put("text.month", "Mes");
+        p.put("text.year", "Año");
+
+        return new JDatePickerImpl(new JDatePanelImpl(model, p), new DateLabelFormatter());
+    }
+
+    private JSpinner crearSpinnerHora() {
+        SpinnerDateModel model = new SpinnerDateModel();
+        JSpinner spinner = new JSpinner(model);
+        spinner.setEditor(new JSpinner.DateEditor(spinner, "HH:mm"));
+        return spinner;
     }
 
     private void crear() {
         try {
             String nombre = txtNombre.getText();
-            LocalDateTime fecha = LocalDateTime.parse(
-                    txtFecha.getText(),
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            );
+            String lugar = txtLugar.getText();
+            double precio = Double.parseDouble(txtPrecio.getText());
+            int aforo = Integer.parseInt(txtAforo.getText());
+
+            Date selected = (Date) datePicker.getModel().getValue();
+            if (selected == null) {
+                JOptionPane.showMessageDialog(this, "Selecciona una fecha válida.");
+                return;
+            }
+
+            LocalDate fecha = selected.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            Date horaDate = (Date) spinnerHora.getValue();
+            LocalTime hora = horaDate.toInstant().atZone(ZoneId.systemDefault()).toLocalTime().withSecond(0).withNano(0);
+
+            LocalDateTime fechaHora = LocalDateTime.of(fecha, hora);
 
             EventoBuilder builder = switch ((String) comboTipo.getSelectedItem()) {
                 case "Concierto" -> new ConciertoBuilder();
@@ -78,20 +118,21 @@ public class VentanaCrearSubevento extends JFrame {
                 default -> new TeatroBuilder();
             };
 
-            Evento sub = builder.conCodigo("SUB-" + System.currentTimeMillis())
+            Evento sub = builder
+                    .conCodigo("SUB-" + System.currentTimeMillis())
                     .conNombre(nombre)
-                    .conFecha(fecha)
-                    .conLugar(txtLugar.getText())
-                    .conPrecio(Double.parseDouble(txtPrecio.getText()))
-                    .conAforo(Integer.parseInt(txtAforo.getText()))
+                    .conLugar(lugar)
+                    .conPrecio(precio)
+                    .conAforo(aforo)
+                    .conFecha(fechaHora)
                     .conUrl("")
                     .build();
 
-            if (padre instanceof VentanaSubeventosFestival v1) {
+            if (padre instanceof VentanaSubeventosFestival v1)
                 v1.agregarSubevento((ComponenteEvento) sub);
-            } else if (padre instanceof VentanaEditarSubeventosFestival v2) {
+
+            if (padre instanceof VentanaEditarSubeventosFestival v2)
                 v2.agregarSubevento((ComponenteEvento) sub);
-            }
 
             dispose();
 
