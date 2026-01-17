@@ -1,0 +1,16 @@
+===== TICKET =====
+Fecha de compra: 2026-01-17T18:07:55.713647600
+
+Cliente:
+Nombre: Ana López
+Correo: ana@test.com
+
+Evento:
+Código: EV012
+Nombre: Marketing Digital Pro
+Fecha: 2026-02-19T18:04:46.583674900
+Lugar: Auditorio BBVA
+
+Cantidad: 1
+Precio total: 17.0 €
+==========================
